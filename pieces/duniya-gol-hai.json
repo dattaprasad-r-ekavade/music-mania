@@ -1,9 +1,12 @@
 {
   "title": "Duniya Gol Hai (दुनिया गोल है)",
   "about": "Absurdist Hindi satire sung over Golden Hour. Verses on the A melody, chorus on the B melody. Each syllable is [text, note, beats]; a syllable ending in a space ends a word. Notes are as the instruments play them; octave_shift moves the voice.",
-  "instrumental": "out/golden-hour.scraft",
+  "instrumental": "out/golden-hour-c.scraft",
   "bpm": 76,
   "octave_shift": -12,
+  "transpose": -3,
+  "keep": 1.0,
+  "tts_prefix": "[sings slowly, holding each vowel] ",
   "vocal_db": 12,
   "instrument_db": {"Piano grp": -2.5, "Violins grp": 7.5},
   "parts": {

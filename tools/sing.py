@@ -87,7 +87,7 @@ def sing_syllable(seg, f0, T):
     return out
 
 
-def sing_line(speech, spans, notes, onset=0.08, max_hold=None, glide=0.04, vibrato=28):
+def sing_line(speech, spans, notes, onset=0.08, max_hold=None, glide=0.04, vibrato=28, keep=None):
     """Warps a whole spoken line onto notes in one pass, so consonants and transitions stay intact.
 
     spans: (start, end) of each syllable's letters in the speech; notes: (f0 Hz, seconds) per syllable.
@@ -118,6 +118,23 @@ def sing_line(speech, spans, notes, onset=0.08, max_hold=None, glide=0.04, vibra
     for t, v in pts:
         if 0 <= t <= L:
             call(dt, 'Add point', t, v)
+    if keep is not None:
+        # Retune: keep the voice's own pitch movement (scaled by `keep`) around each target note, and
+        # move between notes during the consonant onset rather than jumping at the syllable start.
+        snd = parselmouth.Sound(seg, SR)
+        pitch = snd.to_pitch(time_step=0.01, pitch_floor=70, pitch_ceiling=600)
+        own = lambda t0, t1: np.array([pitch.get_value_at_time(t) for t in np.arange(t0, t1, 0.01)])
+        for i, (s, o, e, k, hold, f0) in enumerate(holds):
+            f = own(s, e); f = f[~np.isnan(f)]
+            med = float(np.median(f)) if len(f) else f0
+            t1 = holds[i + 1][0] + holds[i + 1][1] if i + 1 < len(holds) else L
+            for t in np.arange(s + o, min(e + 0.05, t1), 0.01):
+                v = pitch.get_value_at_time(t)
+                dev = 1.0 if np.isnan(v) else (v / med) ** keep
+                u = (t - s) if t - s <= o else o + (t - s - o) * k            # output time within the note
+                cents = min(1, (u - 0.3) / 0.4) * vibrato * np.sin(2 * np.pi * 5.4 * (u - 0.3)) if (hold > 0.6 and u > 0.3) else 0.0
+                call(pt, 'Add point', t, f0 * dev * 2 ** (cents / 1200))
+        holds = []
     for i, (s, o, e, k, hold, f0) in enumerate(holds):
         steps = max(2, int(hold / 0.02))
         for n in range(steps + 1):
@@ -138,34 +155,30 @@ def sing_line(speech, spans, notes, onset=0.08, max_hold=None, glide=0.04, vibra
 
 def main():
     song_path = sys.argv[1]
-    name = os.path.splitext(os.path.basename(song_path))[0]
+    only = sys.argv[sys.argv.index('--only') + 1].split(',') if '--only' in sys.argv else None
+    name = os.path.splitext(os.path.basename(song_path))[0] + ('-' + '-'.join(only) if only else '')
     song = json.load(open(song_path, encoding='utf8'))
     beat = 60 / song['bpm']
     bar = 4 * beat
+    shift = song['octave_shift'] + song.get('transpose', 0)
     voice = np.zeros(int(SR * 300))
     end = 0
     for part, at in song['form']:
+        if only and part not in only:
+            continue
         for line in song['parts'][part]:
             sylls = [s for b in line['bars'] for s, _, _ in b]
             text = ''.join(sylls).strip()
             mp3, al = tts(text, prefix=song.get('tts_prefix', ''))
             speech = decode(mp3)
             spans = syllable_spans(sylls[:-1] + [sylls[-1].rstrip()], al)
-            k = 0
-            for bi, b in enumerate(line['bars']):
-                pos = 0
-                for s, note, beats in b:
-                    s0, s1 = spans[k]
-                    s1 = max(s1, s0 + 0.1)  # pitch analysis needs ~3 periods; very short syllables borrow from what follows
-                    seg = speech[max(0, int((s0 - 0.015) * SR)):int((s1 + 0.02) * SR)]
-                    T = beats * beat - 0.02
-                    sung = sing_syllable(seg, hz(midi(note) + song['octave_shift']), T)
-                    t = (at + line['bar'] - 2 + bi) * bar + pos * beat
-                    i = int(t * SR)
-                    voice[i:i + len(sung)] += sung
-                    end = max(end, i + len(sung))
-                    pos += beats
-                    k += 1
+            notes = [(hz(midi(n) + shift), d * beat) for b in line['bars'] for _, n, d in b]
+            sung, lead = sing_line(speech, spans, notes, keep=song.get('keep', 1.0))
+            n_out = int(0.08 * SR)
+            sung[-n_out:] *= np.linspace(1, 0, n_out)
+            i = int(((at + line['bar'] - 2) * bar - lead) * SR)   # first syllable lands on the line's first beat
+            voice[max(0, i):i + len(sung)] += sung[max(0, -i):]
+            end = max(end, i + len(sung))
             print(f'{part} bar {at + line["bar"] - 1}: {text}')
     voice = voice[:end + SR]
     voice = resample_poly(voice, 160, 147)                     # 44.1 -> 48 kHz, the session rate

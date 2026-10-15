@@ -43,6 +43,12 @@ SoundCraft CLI: `C:\Program Files\SoundCraft\soundcraft-cli.exe`. Update only fr
 | Reverb `damping` | A frequency, 1000–20000 Hz (plate default 10000). Small numbers clamp to 1 kHz and dull the tail. The plate also darkens on its own (~−5 dB at 4 kHz). |
 | Bounce | Ends where the last clip ends. Include ring-out in clip length / `endTicks`. |
 | VSCO naming | Strings, flute, clarinet, oboe are named an octave below sounding pitch. Harp and Salamander use standard names. `zones.py` applies the offset. |
+| `subtractive_synth` | `osc1_wave`/`osc2_wave`: **0 saw, 1 square, 2 sine, 3 triangle** (measured harmonics). Params: `osc2_semitones osc2_detune osc_mix cutoff resonance filter_env_amount filter_attack/decay/sustain/release amp_attack/decay/sustain/release glide level velocity` |
+| `drum_synth` | GM keys 36/38/42/46/45/50/49. Params: `kick_decay kick_tune snare_snappy snare_decay snare_tune hat_decay open_hat_decay tom_tune tom_decay cymbal_decay level` |
+| VSCO gaps | Horn samples skip C4–D5 and trombone shorts have 7-semitone gaps: give those instruments `maxShift: 7`. A velocity layer missing a note falls back to the nearest layer that has it (`session.mjs`). The clarinet's "F#5" files play F5 (`zones.py` corrects mislabels that land cleanly on a neighbouring semitone) |
+| Round robins | Zones differing only by `rr` alternate on repeated notes (spiccato, pizzicato, shorts, kit) |
+| Percussion kit | `perc` zones are fixed keys (36 bass drum, 38 snare, 39 snare roll, 41 tumba, 43 conga, 45 quinto, 46/47 slaps, 49 crash, 51 sus. cymbal, 52 gong, 53/55 cymbal swells, 54 tambourine, 56 cowbell, 58/59 log drums, 60 claves, 61 triangle, 62 sleigh bells, 63 anvil, 64–68 timpani hits, 69/70 timpani rolls), each trimmed so its loudest layer peaks at −3 dBFS (congas were 12 dB under the bass drum). Kits and `drum_synth` ignore `transpose` |
+| Click check | Drum, pizzicato and pluck attacks also trip it. In percussive pieces read the stem levels and listen rather than chase the count |
 
 Further command notes (synth-era title-theme work, still true): `midi.note_add` `start_ticks` is relative to the clip; drum GM map 36/38/42/46/45/50/49; `mix.volume` in dB; `--bounce` is 48 kHz / 24-bit stereo WAV.
 
@@ -59,6 +65,14 @@ Hotel-lobby / study / sleep background: sampled piano, strings, woodwinds, harp.
 - **Humanisation is seeded.** Timing jitter and velocity jitter from `rng(seed)` so renders reproduce. Keep jitter small (about ±12 ticks, ±4 velocity).
 - **Do not outlast the sample.** A shifted-up zone is shorter. `session.mjs` warns; shorten the note or pick a closer zone (`maxShift` default 4 semitones).
 - **Ring-out is part of the piece.** Extra bars of decay after the last written bar. The tail of the bounce should measure near silence in the last 50 ms.
+
+## 4b. Themed collection (2026-10-16)
+
+Five 3–4 minute pieces from owner briefs: `mass-entry`, `spring-dream`, `pahadi-winter`, `city-lights`, `neon-bhairav`. These use SoundCraft's built-in synths and drum machine as well as the sampler (MIT-licensed, original; still no third-party presets or loops).
+
+- **Indian colour from what we have:** oboe stands in for nadaswaram / shehnai, flute with grace notes (`[note, grace]`, kan swar) for bansuri, high piano in double strokes for santoor, harp plucking Pa–Sa–Sa–Sa for tanpura, tumba/conga/quinto patterns for thavil, tabla and keherwa. Ragas as scales: Phrygian dominant (≈ Vakulabharanam), Pahadi, Bhairav (`music.mjs` `SCALES`). A recorded Indian player would still beat these stand-ins.
+- **Loudness by genre:** action / cyberpunk around −11 LUFS (maximizer ceiling −1.5 for dense mixes, so true peak stays under 0), gentle pieces −14 to −15.
+- **Recurring fixes:** VSCO shorts and brass need big `level` boosts against the synths; synth levels start far too low (bed −34 to −40 dB on the first Neon Bhairav render); a lead entering after a quiet intro needs a pickup or swell, not a jump; a drone or bed level with the lead buries it (6–8 dB under).
 
 ## 5. Mix rules (measured targets)
 
@@ -92,6 +106,8 @@ After a reviewed bounce, keep other sections within **0.5 dB** of the reviewed v
 | 2026-10-15 | golden-hour | Violin lead flipped to a harsher layer | Cap melody velocity at 80 | Respect velocity maps |
 | 2026-10-16 | duniya-gol-hai | Need the vocal above the band, piano a bit down, violins a bit up | `vocal_db: 12`, `instrument_db` Piano −2.5 / Violins +7.5, `octave_shift: -12` | Song JSON holds mix offsets; voice sits in a singable octave |
 | 2026-10-16 | duniya-gol-hai | Pitch / timing of sung syllables | Keep consonant onset, stretch the vowel, PSOLA onto the note, vibrato only on long notes, 15 ms pre-roll | 95% of syllables within 50 cents of the written note; vocal 3–7 dB over the band |
+| 2026-10-16 | golden-hour | "10/10, but the violin is suddenly loud at 2:26" | G5 crossed velocity 81 into the forte layer; violin melody capped at 80 | Lead lines stay inside one layer |
+| 2026-10-16 | duniya-gol-hai | "Extremely robotic, syllables unrecognisable" | Whole-line warp of a `[sings]` take, natural pitch contour, band 3 semitones down (CER 0.38 to 0.32); singing parked by the owner | Measure intelligibility (`tools/stt.py`) before asking for a listen |
 
 ## 7. Songs (speech-to-singing)
 

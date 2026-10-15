@@ -88,8 +88,8 @@ for (const [k, bars] of Object.entries(M))
 // Form: [name, harmony, first bar]
 const FORM = [['Intro', H.intro], ['A1', H.A], ['A2', H.A], ['B', H.B], ['C', H.A.slice(0, 8)], ['A3', H.A], ['Outro', H.outro]];
 
-export default function () {
-  const s = new Session({ bpm: 76 });
+export default function ({ transpose = 0 } = {}) {
+  const s = new Session({ bpm: 76, transpose });
   const BAR = s.bar;
   const r = rng(20261015);
   const jit = (amt = 12) => (r() - 0.5) * 2 * amt;

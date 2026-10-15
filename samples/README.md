@@ -20,4 +20,4 @@ CC0 1.0, Versilian Studios / Sam Gossner and Simon Dalzell. They ask that the sa
 
 https://github.com/sgossner/VSCO-2-CE
 
-We only use a subset (violin/viola/cello susvib, harp, flute susvib). A sparse clone is enough if you want to save disk.
+We use a subset. A sparse clone is enough: `Strings/` (violin, viola, cello sections; harp), `Woodwinds/Flute`, `Woodwinds/Clarinet`, `Woodwinds/Oboe`, `Brass/F Horn`, `Brass/Tenor Trombone`, `Brass/Trumpet`, `Brass/Tuba`, `Percussion/Glock`, `Percussion/Marimba`, `Percussion/Xylo`, `Percussion/Timpani` and the one-shots directly in `Percussion/`.

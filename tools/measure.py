@@ -69,6 +69,9 @@ def main():
     ratio = np.abs(hp) / env
     spikes = np.where((ratio > 7) & (np.abs(hp) > 10 ** (-50 / 20)))[0]
     groups = [s for i, s in enumerate(spikes) if i == 0 or s - spikes[i - 1] > sr * 0.05]
+    # A click dies at once; a drum or pluck attack keeps ringing. Keep spikes whose next 2-10 ms are quiet.
+    after = lambda s: np.sqrt(np.mean(hp[s + int(sr * 0.002):s + int(sr * 0.01)] ** 2)) + 1e-9
+    groups = [s for s in groups if s + int(sr * 0.01) < len(hp) and np.abs(hp[s]) / after(s) > 6]
     print(f'Click-like spikes: {len(groups)}' + ('' if not groups else ' at ' + ', '.join(
         f'{g / sr:.2f}s (bar {g // bar + 1})' for g in groups[:12])))
 

@@ -12,7 +12,8 @@ Repo: https://github.com/dattaprasad-r-ekavade/music-mania
 | --- | --- |
 | `samples/` | Sample libraries (downloaded, not committed — see [samples/README.md](samples/README.md)) and `zones.json` |
 | `tools/zones.py` | Builds `samples/zones.json`: every sample zone with its true root note and tuning |
-| `tools/lib/session.mjs` | Turns notes on named instruments into a SoundCraft script |
+| `tools/lib/session.mjs` | Turns notes on named instruments into a SoundCraft script (sample zones with round robins, percussion kit keys, or built-in synths) |
+| `tools/lib/music.mjs` | Shared composition helpers: chord symbols, voice-leading, melodies with grace notes, drum-pattern strings, scales |
 | `tools/render.mjs` | Renders a piece, checks it, measures it (`--stems` adds per-instrument levels) |
 | `tools/measure.py` | The measurements that stand in for listening |
 | `tools/tts.py`, `tools/sing.py`, `tools/stt.py` | ElevenLabs speech (cached in `work/tts/`, each line paid once) turned into singing on a melody, mixed into an instrumental, then scored for intelligibility |
@@ -46,5 +47,25 @@ Checks after every render: per-section stem levels (a lead should sit 2–3 dB a
 | Piece | Length | State |
 | --- | --- | --- |
 | `golden-hour` | 4:31, 76 BPM, E♭ major | Prototype for a hotel-lobby collection: piano with strings, flute, harp. −16.6 LUFS, peak −1.0 dB. Owner review 1 (2026-10-15): moving overall, but the strings' entry (bar 21) wasn't smooth. Fixed with a staged entry (cello swell from bar 20, violas from bar 23, first harp sweep at bar 25) and per-sample level evening; other sections kept within 0.5 dB of the reviewed version |
-| `duniya-gol-hai` | 4:31 song | Absurdist Hindi satire sung by the owner's ElevenLabs voice over Golden Hour (verses on A, chorus on B, verse 1 reprise, outro). 95% of syllables within 50 cents of their note; vocal 3–7 dB over the band. Awaiting a listening review |
-| `smoke` | 4 bars | Pipeline smoke test, not a release |
+| `duniya-gol-hai` | 4:31 song | Absurdist Hindi satire, owner's ElevenLabs voice over Golden Hour (in C via `golden-hour-c`). Owner review 1: "extremely robotic, syllables unrecognisable" (syllable-chopping method, Whisper CER 0.38). Rebuilt as whole-line warping of a `[sings]` TTS take with the voice's own pitch contour kept and the band 3 semitones down: verse 1 CER 0.32 (raw ElevenLabs singing scores 0.11). Speech-to-singing onto a fixed melody has hit its ceiling |
+| `mass-entry` | 3:15, 144 BPM, D Phrygian dominant | South Indian action theme: oboe as nadaswaram hook, brass stabs, string spiccato, thavil-style congas in 3-3-2, half-time horn Hero theme. −11.2 LUFS. Awaiting review |
+| `spring-dream` | 3:46, 72 BPM, F Lydian | Triplet harp, glockenspiel, flute melody; clarinet with pizzicato and marimba; violins reprise with flute countermelody. −14.0 LUFS. Awaiting review |
+| `pahadi-winter` | 3:36, 62 BPM, raga Pahadi on D | Harp tanpura cycle, cello drone, flute as bansuri with kan notes, piano as santoor, soft keherwa. −14.3 LUFS. Awaiting review |
+| `city-lights` | 3:26, 86 BPM, D♭ | Neo-soul / lo-fi: swung drum machine, saturated piano comping, synth bass, harmon-muted trumpet, pizzicato break. −15.0 LUFS. Awaiting review |
+| `neon-bhairav` | 3:24, 100 BPM, raga Bhairav on C | Cyberpunk fusion: rolling synth bass, delayed arp, gliding synth lead doubled by oboe-shehnai, four-on-the-floor plus tabla-style hand drums. −11.4 LUFS. Awaiting review |
+
+## Singing: what we measured (2026-10-16)
+
+Intelligibility is scored with local Whisper (`tools/stt.py`, character error rate against the lyrics; clean speech of the voice scores 0.06).
+
+| Change | Effect on CER |
+| --- | --- |
+| Cutting syllables out of speech and re-pitching each separately | 0.38: ElevenLabs character timestamps are too coarse; consonants get cut |
+| Warping the whole line in one pass | 0.31 |
+| TTS direction `[sings slowly, holding each vowel]` | Syllables twice as long (0.35 s), so less stretching: 0.25 |
+| Pitch vs timing separately | Pitch change does more damage (0.31) than time stretch (0.19) |
+| Keeping the voice's own pitch movement, centred on the note | Helps only together with a smaller pitch gap |
+| Band 3–5 semitones lower, closer to the voice | 0.16–0.28 per line, verse mean 0.32 |
+| `speed: 0.7` voice setting | No effect with eleven_v4 |
+
+The API key lacks the `speech_to_text` permission; Whisper runs locally instead.

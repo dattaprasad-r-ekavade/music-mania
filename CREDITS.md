@@ -35,3 +35,48 @@ duniya-gol-hai.wav  (song: Golden Hour instrumental + Hindi vocal)
   Human input: brief ("absurdist satirical Hindi song"), the owner's voice
   Mix offsets: vocal_db +12, Piano grp −2.5, Violins grp +7.5, octave_shift −12
 ```
+
+```
+mass-entry.wav  (South Indian action theme)
+  Made: 2026-10-16
+  Composition and arrangement: Claude (Opus 5.5), via pieces/mass-entry.mjs (original melody, harmony and rhythm)
+  Human input: theme brief by the owner; no human melodic or arrangement contribution yet
+  Tools: SoundCraft 0.7.0 (MIT OR Apache-2.0): sampler, built-in subtractive_synth and drum_synth, EQ, compressor, saturator, chorus, delay, reverb, maximizer
+  Third-party material: the sample libraries above (VSCO 2 CE, Salamander), played as instruments; no loops, presets or existing compositions
+```
+
+```
+spring-dream.wav  (spring dream)
+  Made: 2026-10-16
+  Composition and arrangement: Claude (Opus 5.5), via pieces/spring-dream.mjs (original melody, harmony and rhythm)
+  Human input: theme brief by the owner; no human melodic or arrangement contribution yet
+  Tools: SoundCraft 0.7.0 (MIT OR Apache-2.0): sampler, built-in subtractive_synth and drum_synth, EQ, compressor, saturator, chorus, delay, reverb, maximizer
+  Third-party material: the sample libraries above (VSCO 2 CE, Salamander), played as instruments; no loops, presets or existing compositions
+```
+
+```
+pahadi-winter.wav  (northern Indian winter (raga Pahadi))
+  Made: 2026-10-16
+  Composition and arrangement: Claude (Opus 5.5), via pieces/pahadi-winter.mjs (original melody, harmony and rhythm)
+  Human input: theme brief by the owner; no human melodic or arrangement contribution yet
+  Tools: SoundCraft 0.7.0 (MIT OR Apache-2.0): sampler, built-in subtractive_synth and drum_synth, EQ, compressor, saturator, chorus, delay, reverb, maximizer
+  Third-party material: the sample libraries above (VSCO 2 CE, Salamander), played as instruments; no loops, presets or existing compositions
+```
+
+```
+city-lights.wav  (urban night, neo-soul / lo-fi)
+  Made: 2026-10-16
+  Composition and arrangement: Claude (Opus 5.5), via pieces/city-lights.mjs (original melody, harmony and rhythm)
+  Human input: theme brief by the owner; no human melodic or arrangement contribution yet
+  Tools: SoundCraft 0.7.0 (MIT OR Apache-2.0): sampler, built-in subtractive_synth and drum_synth, EQ, compressor, saturator, chorus, delay, reverb, maximizer
+  Third-party material: the sample libraries above (VSCO 2 CE, Salamander), played as instruments; no loops, presets or existing compositions
+```
+
+```
+neon-bhairav.wav  (cyberpunk with Indian fusion (raga Bhairav))
+  Made: 2026-10-16
+  Composition and arrangement: Claude (Opus 5.5), via pieces/neon-bhairav.mjs (original melody, harmony and rhythm)
+  Human input: theme brief by the owner; no human melodic or arrangement contribution yet
+  Tools: SoundCraft 0.7.0 (MIT OR Apache-2.0): sampler, built-in subtractive_synth and drum_synth, EQ, compressor, saturator, chorus, delay, reverb, maximizer
+  Third-party material: the sample libraries above (VSCO 2 CE, Salamander), played as instruments; no loops, presets or existing compositions
+```

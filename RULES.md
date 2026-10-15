@@ -99,7 +99,7 @@ After a reviewed bounce, keep other sections within **0.5 dB** of the reviewed v
 
 - Each syllable is `[text, note, beats]`. A trailing space ends a word. Notes are written as the instruments play them; `octave_shift` moves the voice.
 - Form is `[part, startBar]` onto the instrumental. Verses on the A melody, chorus on the B melody, unless a new piece says otherwise.
-- TTS alignment must match the concatenated syllable text exactly. If it drifts, change the lyric spelling (not the aligner).
+- TTS alignment must contain the concatenated syllable text. A delivery prefix (song JSON `tts_prefix`, e.g. `"[sings] "`) may sit in front; skip it when mapping characters to syllables. If the lyrics themselves drift, change the spelling (not the aligner). Leave `tts_prefix` off unless you mean to pay for a new cache of every line.
 - Very short syllables borrow a little of what follows so pitch analysis has enough periods.
 - Vocal chain (current): HPF 90 Hz, bell −2.5 dB @ 300 Hz, high shelf +3 dB @ 4 kHz, compressor −24 dB / 3:1, send to the session Hall, then `vocal_db`.
 - Intelligibility: `tools/stt.py` against the lyric; report character error rate. Low CER is required but not sufficient — still listen.

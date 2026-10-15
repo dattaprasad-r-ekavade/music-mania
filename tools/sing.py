@@ -45,9 +45,10 @@ def syllable_spans(sylls, al):
     """(start, end) seconds of each syllable's letters, from the per-character alignment."""
     chars, st, en = al['characters'], al['character_start_times_seconds'], al['character_end_times_seconds']
     text = ''.join(sylls)
-    if ''.join(chars) != text:
+    i = ''.join(chars).find(text)   # the request may carry a direction such as "[sings] " before the lyrics
+    if i < 0:
         raise ValueError(f'alignment text differs:\n {"".join(chars)!r}\n {text!r}')
-    spans, i = [], 0
+    spans = []
     for s in sylls:
         idx = [j for j in range(i, i + len(s)) if chars[j] not in NOT_LETTER]
         spans.append((st[idx[0]], en[idx[-1]]))
@@ -147,7 +148,7 @@ def main():
         for line in song['parts'][part]:
             sylls = [s for b in line['bars'] for s, _, _ in b]
             text = ''.join(sylls).strip()
-            mp3, al = tts(text)
+            mp3, al = tts(text, prefix=song.get('tts_prefix', ''))
             speech = decode(mp3)
             spans = syllable_spans(sylls[:-1] + [sylls[-1].rstrip()], al)
             k = 0

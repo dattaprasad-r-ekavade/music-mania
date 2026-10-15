@@ -18,10 +18,12 @@ def env():
         return {k: v.strip().strip('"') for k, v in re.findall(r'^([A-Z_]+)=(.*)$', f.read(), re.M)}
 
 
-def tts(text, settings=None):
-    """Returns (mp3 path, alignment dict with characters / character_start_times_seconds / character_end_times_seconds)."""
+def tts(text, settings=None, prefix=''):
+    """Returns (mp3 path, alignment dict with characters / character_start_times_seconds / character_end_times_seconds).
+    prefix: a delivery direction placed before the text, e.g. "[sings] "."""
     e = env()
     settings = settings or {'stability': 0.5, 'similarity_boost': 0.8}
+    text = prefix + text
     key = hashlib.sha1(json.dumps([text, e['ELEVENLABS_VOICE_ID'], e['ELEVENLABS_MODEL_ID'], settings], ensure_ascii=False).encode()).hexdigest()[:16]
     os.makedirs(CACHE, exist_ok=True)
     mp3, meta = os.path.join(CACHE, key + '.mp3'), os.path.join(CACHE, key + '.json')

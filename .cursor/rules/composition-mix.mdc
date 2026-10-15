@@ -1,0 +1,16 @@
+---
+description: Composition, voicing, mix targets, and review-driven rules for pieces
+globs: pieces/**/*.{mjs,json}
+alwaysApply: false
+---
+
+# Composition and mix
+
+- Form first (named sections and bar counts), then harmony, then melody. Voice-lead to the nearest chord tones; always include the third; avoid inner spacing under a minor third.
+- Melody is `[note or null, beats]` per bar, summing to the bar. When a melody leads, thin the accompaniment.
+- **No block entries.** Bring sections in over several bars (Golden Hour: cello swell on the last bar of A1, cellos alone, violas from A2 bar 3, harp from A2 bar 5). After a reviewed bounce, keep other sections within 0.5 dB of that version.
+- Respect velocity layers. VSCO violin susVib forte starts at velocity 81 — lyrical leads stay ≤ 80.
+- Humanisation uses `rng(seed)` only (about ±12 ticks, ±4 velocity) so renders reproduce. Do not outlast a sample; default `maxShift` is 4 semitones.
+- Mix targets: lead 2–3 dB above accompaniment, pads 6–8 dB below. Octave balance vs 1 kHz about +3 dB at 125 Hz and −8 to −12 dB at 4 kHz. Watch a boxy 500 Hz buildup. Maximizer ceiling −1 dBFS. VSCO is quieter than Salamander — sampler `level` plus per-zone `level_trim`.
+- Flags: JUMP > 6 dB vs previous bar, DROP > 8 dB vs both neighbours, unless the form intends a hit.
+- Shared hall is a send, not an insert. Piano: HPF ~35, cut ~300, high shelf ~5 kHz.

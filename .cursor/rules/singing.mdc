@@ -1,0 +1,16 @@
+---
+description: Speech-to-singing and Hindi song JSON conventions
+globs: pieces/*.json,tools/sing.py,tools/tts.py,tools/stt.py
+alwaysApply: false
+---
+
+# Singing
+
+`pieces/<song>.json` is the source (lyrics, melody, form, mix offsets). `tools/sing.py` TTS-then-PSOLA; cache in `work/tts/` is paid once per line and must not be committed.
+
+- Syllable = `[text, note, beats]`. Trailing space ends a word. Notes match the instrumental; `octave_shift` moves the voice (Duniya Gol Hai uses −12).
+- Form is `[part, startBar]` on the instrumental. Verses on the A melody, chorus on the B melody, unless the piece says otherwise.
+- TTS character alignment must equal the concatenated syllable text. Fix spelling, not the aligner. Short syllables borrow ~100 ms so pitch analysis has periods.
+- Keep the spoken consonant onset; stretch the vowel onto the note; vibrato only on long notes (~5.4 Hz, up to 28 cents after 0.3 s). Target: 95% of syllables within 50 cents; vocal 3–7 dB over the band.
+- Mix offsets live in the JSON (`vocal_db`, `instrument_db`), not a hand-edited session. Current vocal chain: HPF 90, bell −2.5 dB @ 300, high shelf +3 dB @ 4 kHz, compressor −24 / 3:1, Hall send.
+- Check intelligibility with `tools/stt.py` (CER) and by listening. Owner's ElevenLabs clone — do not git the voice cache.

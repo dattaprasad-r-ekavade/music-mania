@@ -1,0 +1,27 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Generated scripts, stems, TTS cache, vocals
+work/
+
+# SoundCraft sessions copy third-party samples into Audio Files — do not redistribute
+out/Audio Files/
+out/Backups/
+out/*.scraft
+out/smoke.wav
+
+# Sample libraries are nested clones (download separately; see samples/README.md).
+# Do not add them as gitlinks.
+samples/salamander/
+samples/vsco2/
+
+# OS / editor
+Thumbs.db
+.DS_Store
+*.swp

@@ -51,6 +51,7 @@ SoundCraft CLI: `C:\Program Files\SoundCraft\soundcraft-cli.exe`. Update only fr
 | Click check | Drum, pizzicato and pluck attacks also trip it. In percussive pieces read the per-stem `clicks` column (`--stems`): a click in a pad, lead or drone is real; counts on drums, bass plucks and tabla are attacks |
 | Automation | `automation.set_point {track, param: volume|pan|send_a_level|plugin:a:<id>, at, value}` works in script mode; points ramp linearly. An automated fader ignores `mix.volume`, so `session.mjs` `automate('volume', [[ticks, dB]])` adds the instrument's `volume`. Use it for swells, staged entries and fades instead of velocity tricks |
 | `file.bounce_stems` | One file per *zone* track, taken before the group's inserts, fader and sends. Not a substitute for the per-instrument stem check, so `render.mjs --stems` still mutes groups and re-bounces |
+| Track names | Tracks are addressed by name. Two zone tracks with the same name made the second clip replace the first ("no such clip"); `session.mjs` now numbers duplicates (`#2`) |
 | True peak | The maximizer limits sample peaks only; `ceiling: -1.5` still measured −0.71 dBTP (Neon Bhairav). `render.mjs` warns above −1 dBTP |
 | MCP | `soundcraft-cli mcp` serves list_commands, execute, batch, inspect_session, bounce_mix and more. With `--connect PORT` to a running `soundcraft --control 0` app, the owner can watch and play the session |
 
@@ -77,6 +78,40 @@ Five 3–4 minute pieces from owner briefs: `mass-entry`, `spring-dream`, `pahad
 - **Indian colour from what we have:** oboe stands in for nadaswaram / shehnai, flute with grace notes (`[note, grace]`, kan swar) for bansuri, high piano in double strokes for santoor, harp plucking Pa–Sa–Sa–Sa for tanpura, tumba/conga/quinto patterns for thavil, tabla and keherwa. Ragas as scales: Phrygian dominant (≈ Vakulabharanam), Pahadi, Bhairav (`music.mjs` `SCALES`). A recorded Indian player would still beat these stand-ins.
 - **Loudness by genre:** action / cyberpunk around −11 LUFS (maximizer ceiling −1.5 for dense mixes, so true peak stays under 0), gentle pieces −14 to −15.
 - **Recurring fixes:** VSCO shorts and brass need big `level` boosts against the synths; synth levels start far too low (bed −34 to −40 dB on the first Neon Bhairav render); a lead entering after a quiet intro needs a pickup or swell, not a jump; a drone or bed level with the lead buries it (6–8 dB under).
+
+## 4c. Learning from references (2026-10-16)
+
+Take the abstract parts of music we admire; never its melody. `tools/analyze.py` writes a profile: BPM, bars, key, chords per bar (names and Roman numerals), most common 4-bar progressions, form (sections A, B, … with bar counts), kick/snare/hat grids per section in `drums()` string format, and a mix profile per section (LUFS, octave bands vs 1 kHz, width, crest). `--stems` adds melody/bass statistics (range, steps vs leaps, notes per bar, phrase length, syncopation), never the notes themselves.
+
+| Use from a profile | Do not take |
+| --- | --- |
+| Form and section lengths, tempo, meter | The melody, a hook, or a recognisable riff |
+| Progression habits (Roman numerals) | A distinctive progression plus its rhythm and voicing together |
+| Drum grids as a starting groove, then varied | A whole drum pattern with its sound and fills |
+| Mix targets per section (`ref:` in a piece, `measure.py --ref`) | Samples or stems from the recording |
+| Melody statistics as a style brief | Transcribed MIDI as material |
+
+- **Measured accuracy** (our own renders as ground truth): BPM within 0.6, key right for Golden Hour (E♭) and City Lights (D♭, after weighting the chords' fit); raga pieces report a major/minor stand-in with a low diatonic % (Neon Bhairav: C, 60%). Section boundaries land within a bar or two of the real form; the first boundary in a quiet intro is the weakest.
+- **Transcription** (Basic Pitch on Demucs stems) is noisy: octave errors are counted separately. A lead sharing the "other" stem with piano is mostly lost, so the copying guard can miss it; it is strongest against clean MIDI references.
+- **Copying guard** `tools/similarity.py`: flags a run of 8 intervals with the same rhythm, or >10% shared 6-interval patterns. Positive control (City Lights vs its own transcription): bass 83% flagged, piano run of 12 flagged. Negative control (Golden Hour vs City Lights): max run 5, 0% shared. Run it on every piece written with a reference in mind.
+- **Matchering** (`tools/master.py`): matches loudness and the 125 Hz–4 kHz balance within about 1 dB; extremes follow the arrangement (a glockenspiel stays bright). A starting master, then measure and listen.
+- Reference audio is someone else's recording: keep it in R2 (`refs/`), never in git, never in a release.
+- **Without `--stems`, drum grids come from the whole mix**, so piano and harp attacks read as kick and snare (Golden Hour has no drums but shows a grid). Trust grids only from `--stems` profiles.
+- **Several references into one brief:** `python -I tools/profiles.py refs/a.profile.json refs/b.profile.json …`.
+
+**Hindi film benchmark (2026-10-16):** Tum Hi Ho, Kesariya and Channa Mereya (official YouTube audio, analysed with `--stems`).
+
+| | Tum Hi Ho | Kesariya | Channa Mereya |
+| --- | --- | --- | --- |
+| Measured | 95.7 BPM, F minor | 95.7 BPM, C major | 89.1 BPM, A minor |
+| Published | F minor, 94–99 BPM (sheet music, key databases): **match** | no reliable source | no reliable source |
+| Loudness | −13.8 LUFS, −2.3 dBTP | −10.5 LUFS, −0.9 dBTP | −6.7 LUFS, +1.3 dBTP (a hot upload, not a target) |
+| Top progression | iv–bVII–bVI–i | I–I–I–V (long tonic pedal) | i–bVI–iv–bIII ×12 |
+| Vocal line (5–95 %) | D#3–F5, 65 % steps | B3–D5, 70 % steps | G3–F5, 67 % steps |
+
+What the three share and our pieces lack: tempo 89–96; the vocal moves **by step 65–70 %** with leaps ~20–27 %, about **6.5 notes per bar** in **phrases of 22–25 notes**, and only **26–35 % of notes start on the beat** (strong syncopation; our melodies sit mostly on beats). Mixes are brighter and denser than ours: 4–16 kHz roughly 10–20 dB above Golden Hour, crest 10–12 dB against our 16–17, width −6 to −8.5 dB (more mono-centred; our sampled strings spread wider). Kick in Tum Hi Ho plays a 3-3-2 grid (`X.....X.x.....X.`). For a Hindi-film-style piece: 90–96 BPM, minor key with bVI and bIII, syncopated stepwise lead over the 3-3-2 kick, mastered near −12 LUFS.
+
+**VCSL instruments added** (`zones.py --only …`; folders pulled from R2): `vibes`, `vibes_hard`, `tenor_sax`, `tenor_sax_vib`, `tenor_sax_stac`, `dan_tranh` (santoor / swarmandal stand-in), `dan_tranh_vib`, `upright` (Yamaha), `kalimba`, and a `hand` kit (60–64 darbuka strokes, 65–68 frame drum open/muted, 69–72 bongos). Starting levels with flat sampler settings (`pieces/vcsl-smoke.mjs`): vibes and hand drums about −23 dB, kalimba −31, sax −32, Dan Tranh −34: give the last three about +8–10 dB sampler `level`. Vibraphone partials fool the pitch detector, so flagged vibes zones stay untuned (they are close already).
 
 ## 5. Mix rules (measured targets)
 

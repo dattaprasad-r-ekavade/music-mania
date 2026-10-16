@@ -1,11 +1,11 @@
 """Measures a render, since Claude can't listen to it.
 
-Usage: python -I tools/measure.py FILE.wav BPM BEATS_PER_BAR ['{"Section": [first_bar, last_bar], ...}']
+Usage: python -I tools/measure.py FILE.wav BPM BEATS_PER_BAR ['{"Section": [first_bar, last_bar], ...}'] [--ref refs/<name>.profile.json]
 
 Prints peak and per-bar RMS, flags bars that jump or drop sharply against their neighbours,
 summarises each section (level, brightness, width), lists click-like spikes and checks the tail.
 """
-import json, sys
+import json, os, sys
 import numpy as np, soundfile as sf
 from scipy.signal import butter, sosfilt
 
@@ -43,7 +43,34 @@ def stems(bpm, beats, sections, pairs):
         print(f'  {name:10s}' + ''.join(f'{v:8.1f}' for v in row) + f'{len(c):8d}  ' + ', '.join(f'bar {g // bar + 1}' for g in c[:4]))
 
 
+def compare(x, sr, bpm, beats, sections, ref_path):
+    """Our mix against a reference profile (tools/analyze.py): whole track, then section by section in order
+    when both have the same number of sections."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from analyze import lufs, mix_profile
+    ref = json.load(open(ref_path, encoding='utf-8'))
+    ours = mix_profile(x, sr)
+    print(f'Against {os.path.basename(ref_path)} (ours / reference / difference; |diff| > 3 dB flagged):')
+    rows = [('LUFS', lufs(x, sr), ref['loudness']['lufs']), ('width dB', ours['width_db'], ref['mix']['width_db']), ('crest dB', ours['crest_db'], ref['mix']['crest_db'])]
+    rows += [(f'{b} Hz', ours['bands'][b], ref['mix']['bands'][b]) for b in ours['bands'] if b != '1000']
+    for name, a, b in rows:
+        print(f'  {name:10s} {a:7.1f} {b:7.1f} {a - b:+6.1f}' + ('  <--' if abs(a - b) > 3 else ''))
+    if sections and len(sections) == len(ref['form']):
+        bar = int(sr * 60 / bpm * beats)
+        print('  Section level relative to the loudest section (ours / reference):')
+        ours_s = [mix_profile(x[(a - 1) * bar:b * bar], sr)['lufs'] for a, b in sections.values()]
+        ref_s = [s['mix']['lufs'] for s in ref['form']]
+        for (name, _), o, r, s in zip(sections.items(), ours_s, ref_s, ref['form']):
+            d = (o - max(ours_s)) - (r - max(ref_s))
+            print(f'    {name:10s} {o - max(ours_s):+6.1f} {r - max(ref_s):+6.1f}  ({s["label"]}, {s["bars"][1] - s["bars"][0] + 1} bars)' + ('  <--' if abs(d) > 3 else ''))
+    elif sections:
+        print(f'  ({len(sections)} sections here, {len(ref["form"])} in the reference: no section comparison)')
+
+
 def main():
+    ref = None
+    if '--ref' in sys.argv:
+        i = sys.argv.index('--ref'); ref = sys.argv[i + 1]; del sys.argv[i:i + 2]
     if sys.argv[1] == '--stems':
         return stems(float(sys.argv[2]), float(sys.argv[3]), json.loads(sys.argv[4]), sys.argv[5:])
     path, bpm, beats = sys.argv[1], float(sys.argv[2]), float(sys.argv[3])
@@ -91,6 +118,7 @@ def main():
 
     tail = mono[-int(sr * 0.05):]
     print(f'Last 50 ms: {db(np.sqrt(np.mean(tail ** 2))):.1f} dBFS (should be near silence)')
+    if ref: compare(x, sr, bpm, beats, sections, ref)
 
 
 if __name__ == '__main__':

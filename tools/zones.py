@@ -1,6 +1,8 @@
 """Builds samples/zones.json: one entry per sample zone, with the note it really plays.
 
-Usage: python -I tools/zones.py
+Usage: python -I tools/zones.py                      # rebuild every instrument
+       python -I tools/zones.py --only vibes,hand      # rebuild only these, keep the rest of zones.json as it is
+       (fetch samples first, e.g. node tools/assets.mjs pull "samples/vcsl/Idiophones/Struck Idiophones/Vibraphone/")
 
 Root notes come from the file name plus a per-library octave offset (VSCO names most
 instruments an octave below sounding pitch; measured, see README of this folder).
@@ -64,6 +66,22 @@ AUTO = {
     'xylo': dict(glob='vsco2/Percussion/Xylo/*.wav', rx=r'_(?P<n>[A-G])(?P<a>#?)(?P<o>\d)_(?P<l>ff)_01_far\.wav$', t0=0.02),
     'glock': dict(glob='vsco2/Percussion/Glock/*.wav', rx=r'glock_(?P<l>medium)_(?P<n>[A-G])(?P<a>#?)(?P<o>\d)\.wav$', octave=12),  # sounds 2 octaves over written; files are named 1 under
 }
+
+# VCSL (Versilian Community Sample Library, CC0), added 2026-10-16 for lo-fi / jazz colour and Indian stand-ins.
+VC = 'vcsl/'
+NOTE = r'(?P<n>[A-G])(?P<a>#?)(?P<o>\d)'
+AUTO.update({
+    'vibes': dict(glob=VC + 'Idiophones/Struck Idiophones/Vibraphone/Soft Mallets/*.wav', rx=r'_' + NOTE + r'_v(?P<l>\d)_rr(?P<r>\d)_Main\.wav$', t0=0.05, tune=True),
+    'vibes_hard': dict(glob=VC + 'Idiophones/Struck Idiophones/Vibraphone/Hard Mallets/*.wav', rx=r'_' + NOTE + r'_v(?P<l>\d)_rr(?P<r>\d)_Main\.wav$', t0=0.05, tune=True),
+    'tenor_sax': dict(glob=VC + 'Aerophones/Reed Aerophones/Tenor Saxophone/Non-Vibrato/*.wav', rx=r'_NV_Main_' + NOTE + r'_vl(?P<l>\d)_rr(?P<r>\d)\.wav$', t0=0.5, tune=True, trim=True),
+    'tenor_sax_vib': dict(glob=VC + 'Aerophones/Reed Aerophones/Tenor Saxophone/Vibrato/*.wav', rx=r'_Vib_Main_' + NOTE + r'_(?P<l>var)(?P<r>\d)\.wav$', t0=0.5, tune=True, trim=True),
+    'tenor_sax_stac': dict(glob=VC + 'Aerophones/Reed Aerophones/Tenor Saxophone/Staccato/*.wav', rx=r'_Staccato_Main_' + NOTE + r'_vl(?P<l>\d)_rr(?P<r>\d)\.wav$', t0=0.06),
+    # Plucked zither: a santoor / swarmandal stand-in closer than high piano.
+    'dan_tranh': dict(glob=VC + 'Chordophones/Zithers/Dan Tranh/Normal/*.wav', rx=r'^' + NOTE + r'_(?P<l>p|mp|mf|f|ff)_(?P<r>\d)\.wav$', t0=0.05, tune=True),
+    'dan_tranh_vib': dict(glob=VC + 'Chordophones/Zithers/Dan Tranh/Vibrato/*.wav', rx=r'^' + NOTE + r'_vib_(?P<l>p|mp|mf|f|ff)_(?P<r>\d)\.wav$', t0=0.05),
+    'upright': dict(glob=VC + 'Chordophones/Zithers/Upright Piano, Yamaha/Sustains/*.wav', rx=r'_Sus_' + NOTE + r'_vl(?P<l>\d)_rr(?P<r>\d)\.wav$', t0=0.1, tune=True),
+    'kalimba': dict(glob=VC + 'Idiophones/Plucked Idiophones/Kalimba, Kenya/*.wav', rx=r'_MainSpirit_' + NOTE + r'_k\d+_vl(?P<l>\d)_rr(?P<r>\d)\.wav$', t0=0.05, tune=True),
+})
 LAYER_ORDER = ['ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff', 'loud']
 
 # Percussion kit: MIDI key -> (glob, regex with optional layer `l` and round robin `r`).
@@ -164,9 +182,24 @@ def build_auto(name, spec, flagged):
     return out, octave
 
 
-def build_kit():
+# Hand drums (VCSL): darbuka strokes, frame drums and bongos, closer to tabla / dholak / daf than congas.
+M = VC + 'Membranophones/Struck Membranophones/'
+HAND = {
+    **{59 + k: (M + f'Darbuka/Darbuka_{k}_hit_vl*_rr*.wav', r'_vl(?P<l>\d)_rr(?P<r>\d)') for k in range(1, 6)},  # 60-64: darbuka strokes 1-5
+    65: (M + 'Frame Drum/HDrumL_Hit_v*_rr*_Sum.wav', r'_v(?P<l>\d)_rr(?P<r>\d)'),         # large frame drum, open
+    66: (M + 'Frame Drum/HDrumL_HitMuted_v*_rr*_Sum.wav', r'_v(?P<l>\d)_rr(?P<r>\d)'),    # large frame drum, muted
+    67: (M + 'Frame Drum/HDrumS_Hit_v*_rr*_Sum.wav', r'_v(?P<l>\d)_rr(?P<r>\d)'),         # small frame drum, open
+    68: (M + 'Frame Drum/HDrumS_HitMuted_v*_rr*_Sum.wav', r'_v(?P<l>\d)_rr(?P<r>\d)'),    # small frame drum, muted
+    69: (M + 'Bongos/BongoL_Hit1_v*_rr*_Mid.wav', r'_v(?P<l>\d)_rr(?P<r>\d)'),            # low bongo
+    70: (M + 'Bongos/BongoH_Hit1_v*_rr*_Mid.wav', r'_v(?P<l>\d)_rr(?P<r>\d)'),            # high bongo
+    71: (M + 'Bongos/BongoL_HitMuted2_v*_rr*_Mid.wav', r'_v(?P<l>\d)_rr(?P<r>\d)'),      # low bongo, muted
+    72: (M + 'Bongos/BongoH_HitMuted1_v*_rr*_Mid.wav', r'_v(?P<l>\d)_rr(?P<r>\d)'),      # high bongo, muted
+}
+
+
+def build_kit(kit=KIT):
     out = []
-    for key, (pattern, rx) in KIT.items():
+    for key, (pattern, rx) in kit.items():
         files = [(p, re.search(rx, os.path.basename(p))) for p in sorted(glob.glob(os.path.join(ROOT, pattern)))]
         files = [(p, m) for p, m in files if m]
         if not files:
@@ -211,9 +244,14 @@ def salamander_tuning():
 
 
 def main():
-    zones, flagged = {}, []
-    piano_tune = salamander_tuning()
+    only = set(sys.argv[sys.argv.index('--only') + 1].split(',')) if '--only' in sys.argv else None
+    want = lambda name: only is None or name in only
+    path_out = os.path.join(ROOT, 'zones.json')
+    zones, flagged = (json.load(open(path_out)) if only else {}), []
+    piano_tune = salamander_tuning() if want('piano') else {}
     for inst, (pattern, rx, octave, layers, t0) in INSTRUMENTS.items():
+        if not want(inst):
+            continue
         out = []
         for path in sorted(glob.glob(os.path.join(ROOT, pattern))):
             m = re.search(rx, os.path.basename(path))
@@ -245,13 +283,17 @@ def main():
         zones[inst] = out
         print(f'{inst}: {len(out)} zones, roots {min(z["root"] for z in out)}-{max(z["root"] for z in out)}')
     for inst, spec in AUTO.items():
+        if not want(inst):
+            continue
         out, octave = build_auto(inst, spec, flagged)
         zones[inst] = out
         print(f'{inst}: {len(out)} zones, roots {min(z["root"] for z in out)}-{max(z["root"] for z in out)}, octave offset {octave:+d}, '
               f'layers {sorted({z["layer"] for z in out}, key=layer_key)}' + (', round robins' if any('rr' in z for z in out) else ''))
-    zones['perc'] = build_kit()
-    print(f'perc: {len(zones["perc"])} zones on keys {sorted({z["root"] for z in zones["perc"]})}')
-    with open(os.path.join(ROOT, 'zones.json'), 'w') as f:
+    for name, kit in (('perc', KIT), ('hand', HAND)):
+        if want(name):
+            zones[name] = build_kit(kit)
+            print(f'{name}: {len(zones[name])} zones on keys {sorted({z["root"] for z in zones[name]})}')
+    with open(path_out, 'w') as f:
         json.dump(zones, f, indent=1)
     for line in flagged:
         print('FLAGGED (kept untuned):', line)

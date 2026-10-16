@@ -114,6 +114,14 @@ export class Session {
       }
       for (const [z, notes] of [...byZone].sort((a, b) => a[0].root - b[0].root || a[0].vel_low - b[0].vel_low || (a[0].rr ?? 0) - (b[0].rr ?? 0)))
         tracks.push({ inst, zone: z, notes, name: `${inst.name} ${z.root} ${z.layer}${z.rr ? ' r' + z.rr : ''}` });
+      // Tracks are addressed by name, so two zones with the same root, layer and round robin (a kalimba's two
+      // tines tuned alike) must not share one: a second clip on the same track replaces the first (measured).
+      const seen = new Map();
+      for (const t of tracks.filter(t => t.inst === inst)) {
+        const k = seen.get(t.name) ?? 0;
+        seen.set(t.name, k + 1);
+        if (k) t.name += ` #${k + 1}`;
+      }
       // A note held past the end of its sample (shortened further when shifted up) goes silent early.
       // (Short articulations and one-shots are meant to end on their own; only sustained sounds are checked.)
       const secs = ticks => ticks / TPB * 60 / this.bpm;

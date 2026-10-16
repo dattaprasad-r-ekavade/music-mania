@@ -14,10 +14,18 @@ work/
 # Renders (WAV/MP3) live in Cloudflare R2: node tools/assets.mjs push out/<name>.wav out/<name>.mp3
 out/
 
+# Reference tracks and what is derived from them (stems, MIDI) are someone else's recordings: R2 only.
+# Profiles (refs/*.profile.json) are abstract statistics and are committed.
+refs/*/
+refs/*.wav
+refs/*.mp3
+refs/*.flac
+
 # Sample libraries are nested clones (download separately; see samples/README.md).
 # Do not add them as gitlinks.
 samples/salamander/
 samples/vsco2/
+samples/vcsl/
 
 # OS / editor
 Thumbs.db

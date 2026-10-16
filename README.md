@@ -17,6 +17,11 @@ Repo: https://github.com/dattaprasad-r-ekavade/music-mania
 | `tools/render.mjs` | Renders a piece, checks it, measures it (`--stems` adds per-instrument levels) |
 | `tools/measure.py` | The measurements that stand in for listening |
 | `tools/tts.py`, `tools/sing.py`, `tools/stt.py` | ElevenLabs speech (cached in `work/tts/`, each line paid once) turned into singing on a melody, mixed into an instrumental, then scored for intelligibility |
+| `tools/analyze.py` | Learns a reference track's tempo, bars, key, chords, form, drum grids and mix profile into `refs/<name>.profile.json`; `--stems` adds Demucs separation, Basic Pitch MIDI and melody statistics |
+| `tools/similarity.py`, `tools/notes.mjs` | Copying guard: a piece's lines against reference MIDI (interval + rhythm runs, shared 6-note patterns) |
+| `tools/profiles.py` | Several reference profiles side by side (tempo, key, loudness, bands, form, grooves, line statistics) |
+| `tools/master.py` | Matchering 2.0: master a render to a reference's loudness, balance, peak and width |
+| `refs/` | Reference profiles (committed); reference audio, stems and MIDI stay out of git |
 | `pieces/*.mjs` | Instrumentals. Every musical decision lives here |
 | `pieces/*.json` | Songs (lyrics + melody + mix offsets on top of an instrumental) |
 | `work/` | Generated scripts, stems, TTS (disposable, not committed) |
@@ -42,6 +47,17 @@ python -I -X utf8 tools/sing.py pieces/duniya-gol-hai.json
 Checks after every render: per-section stem levels (a lead should sit 2–3 dB above its accompaniment, pads 6–8 dB below), octave-band balance (about +3 dB at 125 Hz and −8 to −12 dB at 4 kHz relative to 1 kHz), clicks, jumps and drops, and a silent tail. Then a person listens. Measurements cannot judge whether it is beautiful or whether a melody resembles an existing song.
 
 **Deliver only the WAV/MP3.** A `.scraft` session copies every raw sample it uses into `out/Audio Files/`, and VSCO asks that its samples not be redistributed or sold as samples.
+
+## Learning from references
+
+```
+pip install -r requirements-analysis.txt && pip install --no-deps basic-pitch
+python -I tools/analyze.py REF.mp3 --name lobby-ref [--stems]      # refs/lobby-ref.profile.json
+python -I tools/similarity.py pieces/<name>.mjs refs/lobby-ref/*.mid  # before release
+python -I tools/master.py out/<name>.wav REF.mp3                     # optional reference master
+```
+
+A piece that returns `ref: 'refs/<name>.profile.json'` from its generator gets a mix comparison against it on every render. See RULES.md §4c for what to take from a reference and what never to take.
 
 ## Pieces
 

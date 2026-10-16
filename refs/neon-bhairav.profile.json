@@ -1,0 +1,591 @@
+{
+ "source": "neon-bhairav.wav",
+ "seconds": 204.0,
+ "bpm": 99.4,
+ "beats_per_bar": 4,
+ "bars": 83,
+ "first_downbeat_s": 1.834,
+ "key": {
+  "tonic": "C",
+  "mode": "major",
+  "diatonic_pct": 60,
+  "score": 1.93
+ },
+ "loudness": {
+  "lufs": -11.4,
+  "true_peak_db": -0.4,
+  "clicks": 111
+ },
+ "mix": {
+  "lufs": -11.7,
+  "rms_db": -15.1,
+  "crest_db": 13.6,
+  "width_db": -8.5,
+  "bands": {
+   "63": -2.9,
+   "125": -4.3,
+   "250": -1.4,
+   "500": -1.1,
+   "1000": 0.0,
+   "2000": -2.2,
+   "4000": -10.2,
+   "8000": -17.6,
+   "16000": -18.4
+  }
+ },
+ "progressions": [
+  {
+   "roman": [
+    "I",
+    "I",
+    "I",
+    "I"
+   ],
+   "count": 9
+  },
+  {
+   "roman": [
+    "I",
+    "bVI",
+    "bVI",
+    "iv"
+   ],
+   "count": 4
+  },
+  {
+   "roman": [
+    "bVI",
+    "iv",
+    "I",
+    "I"
+   ],
+   "count": 4
+  },
+  {
+   "roman": [
+    "iv",
+    "iv",
+    "I",
+    "bVI"
+   ],
+   "count": 4
+  },
+  {
+   "roman": [
+    "I",
+    "I",
+    "iv",
+    "iv"
+   ],
+   "count": 3
+  },
+  {
+   "roman": [
+    "I",
+    "I",
+    "I",
+    "bVI"
+   ],
+   "count": 1
+  }
+ ],
+ "chord_use": {
+  "I": 46,
+  "iv": 15,
+  "bVI": 11,
+  "bII": 5,
+  "ii": 3,
+  "i": 2,
+  "vi": 1
+ },
+ "form": [
+  {
+   "label": "A",
+   "bars": [
+    1,
+    8
+   ],
+   "seconds": [
+    1.83,
+    21.04
+   ],
+   "mix": {
+    "lufs": -15.7,
+    "rms_db": -19.7,
+    "crest_db": 16.6,
+    "width_db": -7.7,
+    "bands": {
+     "63": 0.7,
+     "125": -0.1,
+     "250": 0.8,
+     "500": 4.7,
+     "1000": 0.0,
+     "2000": 1.7,
+     "4000": 0.2,
+     "8000": -11.4,
+     "16000": -24.9
+    }
+   },
+   "chords": [
+    "C",
+    "C",
+    "C",
+    "C",
+    "C",
+    "C",
+    "C",
+    "C"
+   ],
+   "roman": [
+    "I",
+    "I",
+    "I",
+    "I",
+    "I",
+    "I",
+    "I",
+    "I"
+   ],
+   "drums": {
+    "36": [
+     "................",
+     "....XxXxxX.Xxxxx"
+    ],
+    "38": [
+     "XXXXXXXXXXXXXXXX",
+     "................"
+    ],
+    "42": [
+     "XXXXXXXXXXXXXXXX",
+     "................"
+    ]
+   }
+  },
+  {
+   "label": "B",
+   "bars": [
+    9,
+    22
+   ],
+   "seconds": [
+    21.04,
+    54.64
+   ],
+   "mix": {
+    "lufs": -11.5,
+    "rms_db": -15.0,
+    "crest_db": 12.7,
+    "width_db": -7.8,
+    "bands": {
+     "63": -2.2,
+     "125": -4.3,
+     "250": -4.0,
+     "500": -2.5,
+     "1000": 0.0,
+     "2000": -1.2,
+     "4000": -10.4,
+     "8000": -19.7,
+     "16000": -22.7
+    }
+   },
+   "chords": [
+    "C",
+    "C",
+    "C",
+    "Ab",
+    "Ab",
+    "Fm",
+    "C",
+    "C",
+    "Fm",
+    "Fm",
+    "C",
+    "Ab",
+    "Ab",
+    "Fm"
+   ],
+   "roman": [
+    "I",
+    "I",
+    "I",
+    "bVI",
+    "bVI",
+    "iv",
+    "I",
+    "I",
+    "iv",
+    "iv",
+    "I",
+    "bVI",
+    "bVI",
+    "iv"
+   ],
+   "drums": {
+    "36": [
+     "X.XxxxXxxxXXxxXx",
+     "x.X.XxXxXxXxXxXx"
+    ],
+    "38": [
+     "XXXXXXXXXXXXXxXX",
+     "XXXXXXXXXXXXXXXX"
+    ],
+    "42": [
+     "XXXXXXXXXXXXXxXX",
+     "XXXXXXXXXXXXXxXx"
+    ]
+   }
+  },
+  {
+   "label": "C",
+   "bars": [
+    23,
+    38
+   ],
+   "seconds": [
+    54.64,
+    93.04
+   ],
+   "mix": {
+    "lufs": -10.2,
+    "rms_db": -13.4,
+    "crest_db": 11.8,
+    "width_db": -8.9,
+    "bands": {
+     "63": -2.4,
+     "125": -4.3,
+     "250": -1.0,
+     "500": 1.0,
+     "1000": 0.0,
+     "2000": -1.4,
+     "4000": -12.0,
+     "8000": -16.7,
+     "16000": -15.3
+    }
+   },
+   "chords": [
+    "C",
+    "C",
+    "Fm",
+    "Fm",
+    "C",
+    "Ab",
+    "Ab",
+    "Fm",
+    "C",
+    "C",
+    "Db",
+    "C",
+    "C",
+    "C",
+    "Ab",
+    "C"
+   ],
+   "roman": [
+    "I",
+    "I",
+    "iv",
+    "iv",
+    "I",
+    "bVI",
+    "bVI",
+    "iv",
+    "I",
+    "I",
+    "bII",
+    "I",
+    "I",
+    "I",
+    "bVI",
+    "I"
+   ],
+   "drums": {
+    "36": [
+     "X.XxX.XxxxXxX.Xx",
+     "X.XxxxXxXxXXXxXX"
+    ],
+    "38": [
+     "XXXXXXXXXXXXXXXX",
+     "XXXXXxXXXxXXXxXX"
+    ],
+    "42": [
+     "XxXXXxXxXxXxXxXx",
+     "XxXXXxXxXxXxXXXx"
+    ]
+   }
+  },
+  {
+   "label": "D",
+   "bars": [
+    39,
+    48
+   ],
+   "seconds": [
+    93.04,
+    117.33
+   ],
+   "mix": {
+    "lufs": -11.7,
+    "rms_db": -15.1,
+    "crest_db": 12.9,
+    "width_db": -7.6,
+    "bands": {
+     "63": -3.9,
+     "125": -3.1,
+     "250": 2.8,
+     "500": -4.9,
+     "1000": 0.0,
+     "2000": -3.4,
+     "4000": -16.7,
+     "8000": -23.0,
+     "16000": -26.7
+    }
+   },
+   "chords": [
+    "C",
+    "C",
+    "C",
+    "C",
+    "C",
+    "C",
+    "Cm",
+    "Cm",
+    "Am",
+    "C"
+   ],
+   "roman": [
+    "I",
+    "I",
+    "I",
+    "I",
+    "I",
+    "I",
+    "i",
+    "i",
+    "vi",
+    "I"
+   ],
+   "drums": {
+    "36": [
+     "X.XxxxXxX.XxxxX.",
+     "X.Xx..X.X.X.x.X."
+    ],
+    "38": [
+     "XXXXXXXXXXXXXXXX",
+     "XxXXXxXXXXXXXXXX"
+    ],
+    "42": [
+     "XxXXXxXXXxXXxXXx",
+     "XXXX.xx.X.XxX.Xx"
+    ]
+   }
+  },
+  {
+   "label": "E",
+   "bars": [
+    49,
+    70
+   ],
+   "seconds": [
+    117.33,
+    170.43
+   ],
+   "mix": {
+    "lufs": -10.6,
+    "rms_db": -13.9,
+    "crest_db": 12.4,
+    "width_db": -9.2,
+    "bands": {
+     "63": -3.6,
+     "125": -5.5,
+     "250": -2.9,
+     "500": -2.5,
+     "1000": 0.0,
+     "2000": -3.5,
+     "4000": -9.8,
+     "8000": -17.2,
+     "16000": -18.4
+    }
+   },
+   "chords": [
+    "Fm",
+    "Fm",
+    "C",
+    "Ab",
+    "Fm",
+    "Fm",
+    "C",
+    "C",
+    "Fm",
+    "Fm",
+    "C",
+    "Ab",
+    "Ab",
+    "Fm",
+    "C",
+    "C",
+    "Db",
+    "Db",
+    "C",
+    "Ab",
+    "Db",
+    "Fm"
+   ],
+   "roman": [
+    "iv",
+    "iv",
+    "I",
+    "bVI",
+    "iv",
+    "iv",
+    "I",
+    "I",
+    "iv",
+    "iv",
+    "I",
+    "bVI",
+    "bVI",
+    "iv",
+    "I",
+    "I",
+    "bII",
+    "bII",
+    "I",
+    "bVI",
+    "bII",
+    "iv"
+   ],
+   "drums": {
+    "36": [
+     "X.xxXxXxXXX.Xxx.",
+     "XxxxX.X.XxxxXxX."
+    ],
+    "38": [
+     "XXXXXXXXXXXXXXXX",
+     "XxXxXxXxXxXXXxXX"
+    ],
+    "42": [
+     "XxXxXxXxXxXxXxXX",
+     "XxXXXxXXXxXXXxXX"
+    ]
+   }
+  },
+  {
+   "label": "F",
+   "bars": [
+    71,
+    74
+   ],
+   "seconds": [
+    170.43,
+    180.02
+   ],
+   "mix": {
+    "lufs": -12.2,
+    "rms_db": -16.0,
+    "crest_db": 13.9,
+    "width_db": -7.3,
+    "bands": {
+     "63": -3.5,
+     "125": -6.0,
+     "250": -3.1,
+     "500": 0.3,
+     "1000": 0.0,
+     "2000": 0.3,
+     "4000": -12.9,
+     "8000": -17.8,
+     "16000": -18.9
+    }
+   },
+   "chords": [
+    "C",
+    "C",
+    "C",
+    "C"
+   ],
+   "roman": [
+    "I",
+    "I",
+    "I",
+    "I"
+   ],
+   "drums": {
+    "36": [
+     "xxXxxxXxxxXXX.Xx",
+     "x.xxxX.XXxXxxxXx"
+    ],
+    "38": [
+     "XXXXXXXXXXXXXXXX",
+     "XxXXXxXXXXXXXXXX"
+    ],
+    "42": [
+     "XXXXXXXXXxXXXXXX",
+     "XxXXXxXXxXXxXXXX"
+    ]
+   }
+  },
+  {
+   "label": "A",
+   "bars": [
+    75,
+    83
+   ],
+   "seconds": [
+    180.02,
+    204.0
+   ],
+   "mix": {
+    "lufs": -21.3,
+    "rms_db": -24.2,
+    "crest_db": 20.6,
+    "width_db": -8.7,
+    "bands": {
+     "63": -0.0,
+     "125": 2.7,
+     "250": -1.1,
+     "500": 3.2,
+     "1000": 0.0,
+     "2000": -5.0,
+     "4000": -12.2,
+     "8000": -18.9,
+     "16000": -24.4
+    }
+   },
+   "chords": [
+    "C",
+    "C",
+    "C",
+    "C",
+    "C",
+    "Dm",
+    "Dm",
+    "Dm",
+    "Db"
+   ],
+   "roman": [
+    "I",
+    "I",
+    "I",
+    "I",
+    "I",
+    "ii",
+    "ii",
+    "ii",
+    "bII"
+   ],
+   "drums": {
+    "36": [
+     "................",
+     "XxXxxx.XXxXxx.X."
+    ],
+    "38": [
+     "................",
+     "XXXXXXXXXXXXXXXX"
+    ],
+    "42": [
+     "................",
+     "XXXXXXXXXXXXXXXX"
+    ]
+   }
+  }
+ ]
+}

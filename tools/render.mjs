@@ -19,7 +19,7 @@ const piecePath = path.resolve(process.argv[2]);
 const name = path.basename(piecePath, '.mjs');
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..');
 const { default: piece } = await import(pathToFileURL(piecePath));
-const { session, endTicks, sections } = piece();
+const { session, endTicks, sections, ref } = piece(); // ref: optional refs/<name>.profile.json to compare the mix with
 const { script, expectedClips, trackCount } = session.build(endTicks);
 
 // Samples not on disk yet come from R2 (tools/assets.mjs).
@@ -46,6 +46,7 @@ if (tp > -0.95) console.warn(`TRUE PEAK: ${tp.toFixed(2)} dBTP, above -1 dBTP: l
 const bpm = session.bpm, beats = session.bar / 960;
 const args = ['-I', path.join(root, 'tools', 'measure.py'), path.join(root, 'out', `${name}.wav`), String(bpm), String(beats)];
 if (sections) args.push(JSON.stringify(sections));
+if (ref) args.push('--ref', path.join(root, ref));
 python(args);
 
 // --stems: re-bounce each instrument group alone (the others muted) and compare levels per section.

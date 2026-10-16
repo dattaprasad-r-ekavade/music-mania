@@ -6,7 +6,7 @@
 // 92 BPM, E minor. Flute as bansuri leads; tenor sax answers in the interlude; Dan Tranh plays santoor figures.
 // Form: Intro 8 | Mukhda 8 | Antara 16 | Mukhda 8 | Interlude 8 | Antara2 16 | Mukhda2 16 (twice, fuller) | Outro 8
 
-import { Session, TPB, rng } from '../tools/lib/session.mjs';
+import { Session, TPB, rng, ZONES } from '../tools/lib/session.mjs';
 import { barChords, voice, bassNote, human, melody, checkBars, drums } from '../tools/lib/music.mjs';
 
 const MUKHDA_H = ['Em', 'Cmaj7', 'D', 'Bm7', 'Em', 'C', 'Am7 D', 'Em'];
@@ -38,12 +38,21 @@ const COUNTER = [ // violins over the last mukhda: long notes a sixth above the 
 ];
 [['mukhda', MUKHDA], ['antara', ANTARA], ['sax', SAX], ['counter', COUNTER]].forEach(([n, b]) => checkBars(n, b));
 
+// Bansuri evening-out (owner review: "check for random volume increases"). Per-note RMS on the flute stem: velocity
+// barely moves the level (0.03 dB per step at sampler velocity 40 %); the jumps were the samples. The E4 sample
+// (root 64, plays E4 and F#4) sat 3.5 dB under the G4/A4 sample (root 69): sampler level 8 + level_trim 6 = 14 clamps
+// at the sampler's +12 maximum, so its trim could not lift it, and every F#4 -> G4 step jumped 3.5-4 dB. Each zone's
+// sampler level is set here instead (fitted on the stem, with 4 dB moved to the group fader so none exceeds +12).
+const FLUTE_LEVEL = { 64: 11.5, 69: 8.5, 72: 8.3, 76: 3.9, 81: 2.9, 84: -2.1 };
+ZONES.flute_even ??= ZONES.flute.map(z => ({ ...z, level_trim: FLUTE_LEVEL[z.root] ?? Math.min(12, 8 + (z.level_trim ?? 0)) - 4 }));
+
 const FORM = [['Intro', 8], ['Mukhda', 8], ['Antara', 16], ['Mukhda1b', 8], ['Interlude', 8], ['Antara2', 16], ['Mukhda2', 16], ['Outro', 8]];
 
 export default function () {
   const s = new Session({ bpm: 92 });
   const BAR = s.bar, S16 = TPB / 4;
   const h = human(rng(1792));
+  const hf = human(rng(66)); // own jitter for the frame-drum layer, so the other parts keep their seeded timing
   const eq = (type, freq, gain = 0, q = 0.7) => ({ plugin: 'eq_1band', params: { type, freq, gain, q } });
 
   s.reverb('Hall', 'plate_reverb', { decay: 2.8, pre_delay: 30, damping: 9500, size: 80, low_cut: 250 });
@@ -51,17 +60,22 @@ export default function () {
   const vc = s.instrument('Cellos', { zones: 'cellos', sampler: { attack: 300, release: 900, velocity: 40, level: 9 }, sends: { Hall: -7 }, volume: -1, pan: 0.1, inserts: [eq(3, 45)] });
   const va = s.instrument('Violas', { zones: 'violas', sampler: { attack: 400, release: 900, velocity: 40, level: 9 }, sends: { Hall: -5 }, volume: -4, pan: 0.3, inserts: [eq(3, 150)] });
   const vn = s.instrument('Violins', { zones: 'violins', sampler: { attack: 350, release: 900, velocity: 40, level: 10 }, sends: { Hall: -4 }, volume: -2, pan: -0.3, inserts: [eq(3, 200)] });
-  const fl = s.instrument('Bansuri', { zones: 'flute', sampler: { attack: 60, release: 450, velocity: 40, level: 8 }, sends: { Hall: -6 }, volume: -3.5, inserts: [eq(2, 5000, 2)] });
+  const fl = s.instrument('Bansuri', { zones: 'flute_even', sampler: { attack: 60, release: 450, velocity: 40, level: 0 }, sends: { Hall: -6 }, volume: 0.5, inserts: [eq(2, 5000, 2)] });
   const sax = s.instrument('Sax', { zones: 'tenor_sax_vib', sampler: { attack: 40, release: 400, velocity: 40, level: 9 }, sends: { Hall: -7 }, volume: -3, pan: 0.1 });
-  const dt = s.instrument('Santoor', { zones: 'dan_tranh', oneShot: true, sampler: { attack: 0.5, release: 900, velocity: 40, level: 10 }, sends: { Hall: -6 }, volume: -5, pan: 0.2, inserts: [eq(3, 250)] });
+  // Santoor (Dan Tranh) warmed after the owner heard the intro as "too metally": its stem sat at 4 kHz only 2 dB under
+  // 1 kHz (centroid 1.6 kHz). Lower register, softer strokes (mf layer), high shelf and low-pass take the zing off.
+  const dt = s.instrument('Santoor', { zones: 'dan_tranh', oneShot: true, sampler: { attack: 0.5, release: 900, velocity: 40, level: 10 }, sends: { Hall: -6 }, volume: -7, pan: 0.2,
+    inserts: [eq(3, 150), eq(0, 350, 2, 0.8), eq(2, 3000, -2.5), eq(4, 10000, 0, 0.7)] });
+  dt.automate('volume', [[0, 2], [8 * BAR - 10, 2], [8 * BAR, 0]]); // the soft mf strokes carry the intro: 2 dB up there only
   const bass = s.instrument('Bass', { synth: { plugin: 'subtractive_synth', params: { osc1_wave: 2, osc2_wave: 3, osc2_semitones: 0, osc_mix: 30, cutoff: 900, resonance: 5, filter_env_amount: 10, amp_attack: 5, amp_decay: 400, amp_sustain: 70, amp_release: 180, level: -6 } },
     inserts: [eq(3, 32), { plugin: 'saturator', params: { drive: 2, mix: 20 } }], volume: 1 });
-  const kit = s.instrument('Kit', { synth: { plugin: 'drum_synth', params: { level: -8, kick_decay: 380, kick_tune: -2, snare_snappy: 60, snare_decay: 180, hat_decay: 35, open_hat_decay: 220 } },
-    inserts: [{ plugin: 'compressor', params: { threshold: -16, ratio: 3, attack: 8, release: 120, makeup: 2 } }], sends: { Hall: -18 }, volume: -2 });
-  const hand = s.instrument('Dholak', { zones: 'hand', oneShot: true, sampler: { attack: 0.5, release: 300, velocity: 60 }, sends: { Hall: -14 }, volume: -8, pan: -0.15 });
+  const kit = s.instrument('Kit', { synth: { plugin: 'drum_synth', params: { level: -8, kick_decay: 460, kick_tune: -2, snare_snappy: 60, snare_decay: 180, hat_decay: 35, open_hat_decay: 220 } },
+    inserts: [eq(0, 100, 4, 1.2), { plugin: 'compressor', params: { threshold: -16, ratio: 3, attack: 8, release: 120, makeup: 2 } }], sends: { Hall: -18 }, volume: -2 });
+  const hand = s.instrument('Dholak', { zones: 'hand', oneShot: true, sampler: { attack: 0.5, release: 300, velocity: 60 }, sends: { Hall: -14 }, volume: -8, pan: -0.15,
+    inserts: [eq(3, 45), eq(0, 110, 5, 1.0)] }); // body under the doum (owner: "percussion needs a little bass"); the bass synth sits at 50-80 Hz
   s.master('eq_1band', { type: 2, freq: 4000, gain: 4 });   // the references sit 10-20 dB brighter above 4 kHz than our lobby pieces
   s.master('eq_1band', { type: 2, freq: 10000, gain: 3 });
-  s.master('maximizer', { threshold: -3.5, ceiling: -1.5 });
+  s.master('maximizer', { threshold: -3.5, ceiling: -1.7 }); // -1.5 measured -0.99 dBTP
 
   // Piano: ballad arpeggio, bass note then chord tones in eighths (thinner when told to).
   let pv = null, bv = null;
@@ -88,12 +102,12 @@ export default function () {
   // Santoor: each chord tone struck twice in quick succession, wandering in the upper register.
   const santoor = (t0, chs, vel) => {
     for (const { ch, at, beats } of chs) {
-      const v = voice(ch, 4, 64, 83);
+      const v = voice(ch, 4, 59, 78);
       const path = [0, 1, 2, 3, 2, 1, 2, 3];
       for (let k = 0; k < beats * 2; k++) {
         const p = v[path[k % path.length]], t = t0 + at * TPB + k * 2 * S16;
         dt.note(p, t + h.t(5), S16 * 2, vel + (k % 2 ? -6 : 0) + h.v(3));
-        dt.note(p, t + S16 + h.t(5), S16 * 2, vel - 12 + h.v(3));
+        dt.note(p, t + S16 + h.t(5), S16 * 2, vel - 16 + h.v(3));
       }
     }
   };
@@ -110,6 +124,7 @@ export default function () {
   const groove = (t0, vel, full = true) => {
     drums(kit, t0, { 36: 'X.....X.....X...', 38: full ? '........x.......' : '................', 42: full ? 'x.o.x.o.x.o.x.o.' : '' }, { vel, h });
     drums(hand, t0, { 60: 'X.....x.....x...', 62: '...x.....x....x.', 64: full ? '..o...o.o.o...o.' : '' }, { vel: vel - 6, h });
+    drums(hand, t0, { 66: 'x.....x.....x...' }, { vel: vel - 14, h: hf }); // muted large frame drum under each doum for low end
   };
   const fill = t0 => drums(hand, t0 + 2 * TPB, { 62: 'x.x.xxXX', 60: 'X.......' }, { vel: 84, h });
 
@@ -124,7 +139,7 @@ export default function () {
       const chs = barChords(harm);
       switch (name) {
         case 'Intro':
-          santoor(t0, chs, i < 4 ? 50 : 56);
+          santoor(t0, chs, i < 4 ? 38 : 40);
           pads(t0, chs, 44, false);
           if (i >= 4) piano(t0, chs, 40, true);
           if (i === 7) fill(t0);
@@ -151,7 +166,7 @@ export default function () {
           if (i === 7) fill(t0);
           break;
         case 'Outro':
-          santoor(t0, chs, 50 - i * 3);
+          santoor(t0, chs, 42 - i * 2);
           pads(t0, chs, 50 - i * 3, i < 4);
           if (i < 4) piano(t0, chs, 42 - i * 2, true);
           break;

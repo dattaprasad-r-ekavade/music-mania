@@ -136,6 +136,12 @@ export class Session {
     for (const r of this.reverbs) { cmd('track.new', { kind: 'aux', name: r.name }); nextId++; }
     // 2. Samples (each load creates a source id).
     for (const t of tracks.filter(t => t.inst.synth)) cmd('mix.instrument', { track: t.name, plugin: t.inst.synth.plugin, params: t.inst.synth.params ?? {} });
+    // The sampler clamps `level` at +12 dB: a zone trim that pushes past it is silently lost (Sandhya's flute
+    // E4 played 3 dB low). Warn so the piece lowers sampler.level and raises the group volume instead.
+    for (const inst of this.instruments.filter(i => !i.synth)) {
+      const over = tracks.filter(t => t.inst === inst && (inst.sampler?.level ?? 0) + (t.zone.level_trim ?? 0) > 12);
+      if (over.length) console.warn(`${inst.name}: sampler level + level_trim exceeds +12 dB on ${over.length} zones (clamped); lower sampler.level and raise volume`);
+    }
     for (const t of tracks.filter(t => !t.inst.synth)) {
       cmd('mix.sampler_load', {
         track: t.name, path: path.join(SAMPLES, t.zone.path).replace(/\\/g, '/'),

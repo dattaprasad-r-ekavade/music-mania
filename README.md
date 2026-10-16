@@ -19,6 +19,8 @@ Repo: https://github.com/dattaprasad-r-ekavade/music-mania
 | `tools/tts.py`, `tools/sing.py`, `tools/stt.py` | ElevenLabs speech (cached in `work/tts/`, each line paid once) turned into singing on a melody, mixed into an instrumental, then scored for intelligibility |
 | `tools/analyze.py` | Learns a reference track's tempo, bars, key, chords, form, drum grids and mix profile into `refs/<name>.profile.json`; `--stems` adds Demucs separation, Basic Pitch MIDI and melody statistics |
 | `tools/similarity.py`, `tools/notes.mjs` | Copying guard: a piece's lines against reference MIDI (interval + rhythm runs, shared 6-note patterns) |
+| `tools/critique.mjs`, `tools/lib/theory.mjs` | Melody critique against measured targets (docs/theory-western.md) |
+| `tools/lib/raga.mjs` | Raga, taal and ornament data and checks (docs/theory-indian.md) |
 | `tools/profiles.py` | Several reference profiles side by side (tempo, key, loudness, bands, form, grooves, line statistics) |
 | `tools/master.py` | Matchering 2.0: master a render to a reference's loudness, balance, peak and width |
 | `refs/` | Reference profiles (committed); reference audio, stems and MIDI stay out of git |

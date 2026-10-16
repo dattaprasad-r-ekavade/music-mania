@@ -58,6 +58,7 @@ Look at the PNGs with the Read tool (`work/<name>.mix.png`, `.stems.png`; `pytho
 
 - Pieces: golden-hour (owner 10/10), mass-entry, spring-dream, pahadi-winter, city-lights, neon-bhairav (awaiting review), sandhya (review 1 applied: warmer intro, percussion low end, flute levels).
 - **Next for Sandhya** (from critique.mjs and the mix PNG, not yet done): melody is too on-beat and even (see RULES 4d); top end dark (4 kHz below target in 5/8 sections, 8 kHz ~9 dB under reference); low-mids 6-9 dB under reference; sections don't breathe (flat level bars 9-80); violins above the flute for ~35 bars; cellos only ~2.5 dB under the lead. Owner approved the flute line as is: ask before changing melody.
+- Embeddings: Sandhya is the closest of our pieces to the Hindi references but outside their cluster (RULES 4d); Intro and Outro drift most.
 - **Sampler clamp warning fires in six older pieces** (all but golden-hour): fix each when it is next revised (lower `sampler.level`, raise group `volume`).
 - Open owner decisions: recreate the GitHub repo to free 615 MB of old LFS storage (history already rewritten); lower the maximizer ceiling on the loud pieces.
 - A stray `node --test tests/comment-attachment-upload.test.js` process from another project was running on the machine; not ours.

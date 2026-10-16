@@ -1,6 +1,10 @@
 # Sample libraries (not in git)
 
-Audio lives on disk here but is **not committed**. Licences and how we credit them: [CREDITS.md](../CREDITS.md). After a clone, download both libraries into these folders, then rebuild the zone map:
+Audio is **not committed**. Licences and how we credit them: [CREDITS.md](../CREDITS.md).
+
+The libraries are mirrored in the project's private Cloudflare R2 bucket (`samples/salamander/`, `samples/vsco2/`, `samples/vcsl/`). `tools/render.mjs` downloads only the files a piece uses, so this folder is a cache: `node tools/assets.mjs prune` empties it (only for folders R2 holds in full), `node tools/assets.mjs pull samples/vsco2/Strings/` fetches a whole folder, and `node tools/assets.mjs mirror OWNER/REPO samples/<name>` adds a library from GitHub without using local disk.
+
+Without R2 access, clone the libraries from GitHub into these folders as below. To rebuild the zone map:
 
 ```
 python -I tools/zones.py

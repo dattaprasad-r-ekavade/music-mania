@@ -11,10 +11,8 @@ venv/
 work/
 
 # SoundCraft sessions copy third-party samples into Audio Files — do not redistribute
-out/Audio Files/
-out/Backups/
-out/*.scraft
-out/smoke.wav
+# Renders (WAV/MP3) live in Cloudflare R2: node tools/assets.mjs push out/<name>.wav out/<name>.mp3
+out/
 
 # Sample libraries are nested clones (download separately; see samples/README.md).
 # Do not add them as gitlinks.

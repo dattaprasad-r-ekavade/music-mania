@@ -51,7 +51,7 @@ export class Session {
   //   or  { synth: {plugin, params} } for a built-in instrument (subtractive_synth, drum_synth) on one track.
   // Percussion kits (zones marked `exact`, e.g. 'perc') play only on their own key and ignore transpose.
   instrument(name, opts) {
-    const inst = { name, notes: [], maxShift: 4, ...opts, zones: opts.synth ? null : ZONES[opts.zones] };
+    const inst = { name, notes: [], automation: [], maxShift: 4, ...opts, zones: opts.synth ? null : ZONES[opts.zones] };
     if (!inst.synth && !inst.zones) throw new Error(`no zones for ${opts.zones}`);
     const fixed = !!inst.zones?.[0]?.exact || inst.synth?.plugin === 'drum_synth';
     if (inst.zones?.[0]?.exact) inst.maxShift = 0;
@@ -59,6 +59,10 @@ export class Session {
     return {
       // start and length in ticks; pitch as note name or MIDI number
       note: (pitch, start, length, velocity) => inst.notes.push({ pitch: midi(pitch) + (fixed ? 0 : this.transpose), start: Math.max(0, Math.round(start)), length: Math.max(10, Math.round(length)), velocity: Math.max(1, Math.min(127, Math.round(velocity))) }),
+      // Breakpoints on the group track, ramped linearly between points: [[ticks, value], ...].
+      // param: volume | pan | send_a_level | plugin:a:<id>. Volume values are dB offsets from the
+      // instrument's `volume` (an automated fader ignores mix.volume, measured).
+      automate: (param, points) => inst.automation.push(...points.map(([t, value]) => ({ param, t: Math.max(0, Math.round(t)), value }))),
     };
   }
 
@@ -155,6 +159,10 @@ export class Session {
       Object.entries(inst.sends ?? {}).forEach(([r, db], slot) => cmd('mix.send', { track: grp, slot, bus: `${r} bus`, level_db: db }));
       if (inst.volume != null) cmd('mix.volume', { tracks: [grp], db: inst.volume });
       if (inst.pan != null) cmd('mix.pan', { tracks: [grp], pan: inst.pan });
+      for (const a of inst.automation.sort((x, y) => x.t - y.t)) {
+        const at = `${Math.floor(a.t / this.bar) + 1}|${Math.floor(a.t % this.bar / TPB) + 1}|${String(a.t % TPB).padStart(3, '0')}`;
+        cmd('automation.set_point', { track: grp, param: a.param, at, value: a.param === 'volume' ? (inst.volume ?? 0) + a.value : a.value });
+      }
     }
     if (this.masterInserts.length) {
       cmd('track.new', { kind: 'master' }); // always named "Master 1", whatever name is passed (measured)

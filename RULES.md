@@ -9,7 +9,7 @@ Cursor picks up a shorter form of the same rules from `.cursor/rules/`.
 1. **Every musical decision lives in `pieces/`** (a `.mjs` instrumental, or a `.json` song). Do not hand-edit a `.scraft` session and call that the source. Re-render from the generator.
 2. **Ticks per beat = 960.** SoundCraft is not 480. A piece written at 480 plays in half the time and goes silent after the midpoint.
 3. **The agent cannot hear.** After every bounce, run `tools/measure.py` (via `tools/render.mjs`). Then a person listens. Measurements catch silence, timing errors, clipping, jumps, buried leads and a missing tail. They cannot judge beauty or resemblance to an existing song.
-4. **Do not commit secrets or third-party samples.** `.env` (ElevenLabs), `work/` (TTS cache of the owner's voice), `samples/**` audio, `out/Audio Files/` and `out/*.scraft` stay local. Deliver WAV/MP3 only. VSCO asks that its samples not be redistributed or sold as samples; a `.scraft` session copies them into `out/Audio Files/`.
+4. **Do not commit secrets or third-party samples.** `.env` (ElevenLabs), `work/` (TTS cache of the owner's voice), `samples/**` audio and everything in `out/` stay out of git. Sample libraries and released WAV/MP3 live in the private R2 bucket (`tools/assets.mjs`). Deliver WAV/MP3 only. VSCO asks that its samples not be redistributed or sold as samples; a `.scraft` session copies them into `out/Audio Files/`.
 5. **Record origin** in `CREDITS.md` for every released track.
 
 ## 2. Pipeline
@@ -26,7 +26,7 @@ python -I -X utf8 tools/sing.py pieces/<song>.json    # vocal over an instrument
 3. **Render** through SoundCraft 0.7.0 (`soundcraft-cli.exe`). Clips must include ring-out; bounce length is the last clip end.
 4. **Measure.** Per-bar RMS, jumps/drops, section RMS / centroid / low-mid-high / width, octave bands vs 1 kHz, click spikes, last 50 ms. With `--stems`, per-instrument RMS per section.
 5. **Owner listens.** Changes go back into the generator, not the session.
-6. **Origin entry** in `CREDITS.md`. Commit generator + WAV/MP3 together.
+6. **Origin entry** in `CREDITS.md`. Commit the generator, and push the WAV/MP3 to R2 in the same step: `node tools/assets.mjs push out/<name>.wav out/<name>.mp3`.
 
 SoundCraft CLI: `C:\Program Files\SoundCraft\soundcraft-cli.exe`. Update only from [official GitHub releases](https://github.com/storytold/soundcraft). Do not use the paid AI mixing assistant, Craft credits, or the sampler to load anything other than the libraries in `CREDITS.md`.
 
@@ -48,7 +48,11 @@ SoundCraft CLI: `C:\Program Files\SoundCraft\soundcraft-cli.exe`. Update only fr
 | VSCO gaps | Horn samples skip C4–D5 and trombone shorts have 7-semitone gaps: give those instruments `maxShift: 7`. A velocity layer missing a note falls back to the nearest layer that has it (`session.mjs`). The clarinet's "F#5" files play F5 (`zones.py` corrects mislabels that land cleanly on a neighbouring semitone) |
 | Round robins | Zones differing only by `rr` alternate on repeated notes (spiccato, pizzicato, shorts, kit) |
 | Percussion kit | `perc` zones are fixed keys (36 bass drum, 38 snare, 39 snare roll, 41 tumba, 43 conga, 45 quinto, 46/47 slaps, 49 crash, 51 sus. cymbal, 52 gong, 53/55 cymbal swells, 54 tambourine, 56 cowbell, 58/59 log drums, 60 claves, 61 triangle, 62 sleigh bells, 63 anvil, 64–68 timpani hits, 69/70 timpani rolls), each trimmed so its loudest layer peaks at −3 dBFS (congas were 12 dB under the bass drum). Kits and `drum_synth` ignore `transpose` |
-| Click check | Drum, pizzicato and pluck attacks also trip it. In percussive pieces read the stem levels and listen rather than chase the count |
+| Click check | Drum, pizzicato and pluck attacks also trip it. In percussive pieces read the per-stem `clicks` column (`--stems`): a click in a pad, lead or drone is real; counts on drums, bass plucks and tabla are attacks |
+| Automation | `automation.set_point {track, param: volume|pan|send_a_level|plugin:a:<id>, at, value}` works in script mode; points ramp linearly. An automated fader ignores `mix.volume`, so `session.mjs` `automate('volume', [[ticks, dB]])` adds the instrument's `volume`. Use it for swells, staged entries and fades instead of velocity tricks |
+| `file.bounce_stems` | One file per *zone* track, taken before the group's inserts, fader and sends. Not a substitute for the per-instrument stem check, so `render.mjs --stems` still mutes groups and re-bounces |
+| True peak | The maximizer limits sample peaks only; `ceiling: -1.5` still measured −0.71 dBTP (Neon Bhairav). `render.mjs` warns above −1 dBTP |
+| MCP | `soundcraft-cli mcp` serves list_commands, execute, batch, inspect_session, bounce_mix and more. With `--connect PORT` to a running `soundcraft --control 0` app, the owner can watch and play the session |
 
 Further command notes (synth-era title-theme work, still true): `midi.note_add` `start_ticks` is relative to the clip; drum GM map 36/38/42/46/45/50/49; `mix.volume` in dB; `--bounce` is 48 kHz / 24-bit stereo WAV.
 
@@ -137,5 +141,5 @@ General information, not legal advice.
 | --- | --- |
 | `pieces/`, `tools/`, `RULES.md`, `music.md`, `CREDITS.md`, `README.md` | `.env` |
 | `samples/zones.json` and sample *licences / readmes* | Sample audio (`salamander/Samples/`, VSCO `.wav`) |
-| `out/*.wav` and `out/*.mp3` of real pieces | `out/Audio Files/`, `out/*.scraft`, `out/Backups/` |
+| `tools/assets.mjs` (R2 holds `samples/salamander`, `samples/vsco2`, `samples/vcsl` and `out/*.wav`/`*.mp3`) | Anything in `out/` (renders go to R2; `.scraft` and `Audio Files/` stay local) |
 | `.cursor/rules/` | `work/` (scripts, stems, TTS, vocals) |

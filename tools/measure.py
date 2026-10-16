@@ -14,10 +14,24 @@ def db(x):
     return 20 * np.log10(max(x, 1e-9))
 
 
+def clicks(mono, sr):
+    """Sample positions of click-like spikes: high-passed spikes far above the local high-frequency level."""
+    hp = sosfilt(butter(4, 6000, 'hp', fs=sr, output='sos'), mono)
+    win = int(sr * 0.02)
+    env = np.sqrt(np.convolve(hp ** 2, np.ones(win) / win, mode='same')) + 1e-6
+    ratio = np.abs(hp) / env
+    spikes = np.where((ratio > 7) & (np.abs(hp) > 10 ** (-50 / 20)))[0]
+    groups = [s for i, s in enumerate(spikes) if i == 0 or s - spikes[i - 1] > sr * 0.05]
+    # A click dies at once; a drum or pluck attack keeps ringing. Keep spikes whose next 2-10 ms are quiet.
+    after = lambda s: np.sqrt(np.mean(hp[s + int(sr * 0.002):s + int(sr * 0.01)] ** 2)) + 1e-9
+    return [s for s in groups if s + int(sr * 0.01) < len(hp) and np.abs(hp[s]) / after(s) > 6]
+
+
 def stems(bpm, beats, sections, pairs):
-    """Per-section RMS of each solo stem, so buried or dominant parts show up."""
-    print('Stem RMS dBFS per section (-99 = silent):')
-    print(f'  {"":10s}' + ''.join(f'{k:>8s}' for k in sections))
+    """Per-section RMS of each solo stem, so buried or dominant parts show up, and clicks per stem,
+    so a click in a sustained part isn't lost among drum attacks in the full mix."""
+    print('Stem RMS dBFS per section (-99 = silent), and click-like spikes per stem:')
+    print(f'  {"":10s}' + ''.join(f'{k:>8s}' for k in sections) + f'{"clicks":>8s}  first at')
     for name, path in zip(pairs[::2], pairs[1::2]):
         x, sr = sf.read(path)
         m, bar = x.mean(1), int(sr * 60 / bpm * beats)
@@ -25,7 +39,8 @@ def stems(bpm, beats, sections, pairs):
         for a, b in sections.values():
             r = np.sqrt(np.mean(m[(a - 1) * bar:b * bar] ** 2))
             row.append(db(r) if r > 1e-6 else -99)
-        print(f'  {name:10s}' + ''.join(f'{v:8.1f}' for v in row))
+        c = clicks(m, sr)
+        print(f'  {name:10s}' + ''.join(f'{v:8.1f}' for v in row) + f'{len(c):8d}  ' + ', '.join(f'bar {g // bar + 1}' for g in c[:4]))
 
 
 def main():
@@ -62,16 +77,7 @@ def main():
             print(f'  {name:12s} bars {a:3d}-{b:3d}: {db(np.sqrt(np.mean(m ** 2))):6.1f} | {(f * spec).sum() / tot:6.0f} | '
                   f'{lo:4.1f} / {100 - lo - hi:4.1f} / {hi:4.1f} | {db(np.sqrt(np.mean(s ** 2))) - db(np.sqrt(np.mean(m ** 2))):6.1f}')
 
-    # Clicks: high-passed sample spikes far above the local high-frequency level.
-    hp = sosfilt(butter(4, 6000, 'hp', fs=sr, output='sos'), mono)
-    win = int(sr * 0.02)
-    env = np.sqrt(np.convolve(hp ** 2, np.ones(win) / win, mode='same')) + 1e-6
-    ratio = np.abs(hp) / env
-    spikes = np.where((ratio > 7) & (np.abs(hp) > 10 ** (-50 / 20)))[0]
-    groups = [s for i, s in enumerate(spikes) if i == 0 or s - spikes[i - 1] > sr * 0.05]
-    # A click dies at once; a drum or pluck attack keeps ringing. Keep spikes whose next 2-10 ms are quiet.
-    after = lambda s: np.sqrt(np.mean(hp[s + int(sr * 0.002):s + int(sr * 0.01)] ** 2)) + 1e-9
-    groups = [s for s in groups if s + int(sr * 0.01) < len(hp) and np.abs(hp[s]) / after(s) > 6]
+    groups = clicks(mono, sr)
     print(f'Click-like spikes: {len(groups)}' + ('' if not groups else ' at ' + ', '.join(
         f'{g / sr:.2f}s (bar {g // bar + 1})' for g in groups[:12])))
 

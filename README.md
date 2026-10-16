@@ -20,14 +20,15 @@ Repo: https://github.com/dattaprasad-r-ekavade/music-mania
 | `pieces/*.mjs` | Instrumentals. Every musical decision lives here |
 | `pieces/*.json` | Songs (lyrics + melody + mix offsets on top of an instrumental) |
 | `work/` | Generated scripts, stems, TTS (disposable, not committed) |
-| `out/` | Renders: `.wav` and `.mp3` are in git; `.scraft` sessions stay local |
+| `out/` | Renders (local, not in git). Released `.wav` and `.mp3` are kept in R2 under `out/`; `.scraft` sessions stay local |
+| `tools/assets.mjs`, `tools/lib/r2.mjs` | Cloudflare R2 storage for sample libraries and renders: `status`, `mirror`, `push`, `pull`, `need`, `prune` |
 
 ## Setup
 
 1. Clone this repo. Copy `.env.example` to `.env` and fill in ElevenLabs keys if you will sing.
 2. Install [SoundCraft](https://github.com/storytold/soundcraft/releases) 0.7.0 (Windows). The CLI is `C:\Program Files\SoundCraft\soundcraft-cli.exe`.
 3. Python 3 with `pip install -r requirements.txt`. Node.js for `tools/render.mjs`. `ffmpeg` on PATH for MP3s and TTS decode.
-4. Download the sample libraries into `samples/` ([samples/README.md](samples/README.md)), then `python -I tools/zones.py` if you change them.
+4. Add the R2 keys to `.env` (`R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`). Samples download on demand: `render.mjs` fetches the files a piece uses from R2 into `samples/`. `node tools/assets.mjs pull out/` gets the released renders. See [samples/README.md](samples/README.md).
 
 ## Making a piece
 

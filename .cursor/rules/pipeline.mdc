@@ -12,5 +12,5 @@ Read `RULES.md` before changing a track. Musical decisions live in `pieces/`. Re
 - Bounce length = last clip end. Include ring-out in `endTicks`. The last 50 ms should measure near silence.
 - Sampler: one sample per track. VSCO strings/woodwinds are named an octave below sounding pitch; `zones.py` corrects this. Reverb `damping` is a frequency (1000–20000 Hz), not a small wet/dry number.
 - After every bounce, measure (`node tools/render.mjs pieces/<name>.mjs --stems`). Then a person listens. Measurements cannot judge beauty or resemblance to an existing song.
-- Do not commit `.env`, `work/`, sample audio, `out/Audio Files/`, or `out/*.scraft`. Deliver WAV/MP3. Record each track in `CREDITS.md`.
+- Do not commit `.env`, `work/`, sample audio, or anything in `out/`. Samples and released WAV/MP3 live in R2 (`node tools/assets.mjs`). Deliver WAV/MP3. Record each track in `CREDITS.md`.
 - SoundCraft 0.7.0 at `C:\Program Files\SoundCraft\`. Update only from official GitHub releases. No paid AI mix assistant, no third-party samples outside `CREDITS.md`.

@@ -9,7 +9,8 @@ pretty_midi
 mir_eval
 resampy
 matchering>=2.0.6
-# analyze.py --separator roformer (default): BS-RoFormer SW, 6 stems. audio-separator's declared deps
+# OPTIONAL, experimental and not working yet (see analyze.py docstring): analyze.py --separator roformer
+# (BS-RoFormer SW, 6 stems). Default is demucs; skip these unless fixing it. audio-separator's declared deps
 # pull a newer torch + torchvision + onnx, so install it without them:
 #   pip install --no-deps audio-separator==0.47.0
 # The model (BS-Roformer-SW.ckpt, 699 MB) downloads on first use to ~/.cache/audio-separator-models

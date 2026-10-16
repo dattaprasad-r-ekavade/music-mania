@@ -5,12 +5,12 @@ Usage: python -I tools/analyze.py REF.wav|mp3 [--name NAME] [--stems [--separato
 Writes refs/<name>.profile.json. With --stems it also separates the track, transcribes the melodic
 stems to MIDI (Basic Pitch) and adds melody and bass statistics plus a 'separator' field. Stems and
 MIDI never go to git (they are derived from someone else's recording); they are cached per separator:
-  --separator roformer (default)  BS-RoFormer SW via python-audio-separator: drums, bass, vocals, piano,
-                                  guitar, other -> refs/<name>/roformer/*.flac. A horn or flute lead stays
-                                  in 'other' without the piano. About 6x real time on a laptop CPU
-                                  (~25 min for a 4-minute song; --overlap 2 doubles it), once per track.
-  --separator demucs              Demucs htdemucs: drums, bass, vocals, other -> refs/<name>/htdemucs/*.wav.
-                                  About 1x real time; the lead shares 'other' with piano and guitar.
+  --separator demucs (default)    Demucs htdemucs: drums, bass, vocals, other -> refs/<name>/htdemucs/*.wav.
+                                  The lead shares 'other' with piano and guitar.
+  --separator roformer            EXPERIMENTAL, NOT WORKING (2026-10-16): BS-RoFormer SW (6 stems) through
+                                  audio-separator 0.47 on torch 2.10 CPU sends everything, vocals included,
+                                  to 'other' (Viperx-1297 returned silence). ~7x real time on a laptop CPU.
+                                  Stems would go to refs/<name>/roformer/*.flac.
 MIDI goes next to the stems, and refs/<name>/*.mid mirrors the latest run (input for similarity.py).
 
 What a profile is for: form and bar counts, tempo, harmonic habits (Roman numerals), drum grids in the
@@ -215,7 +215,7 @@ ROFORMER_MODEL = 'BS-Roformer-SW.ckpt'   # 699 MB, downloaded once into MODEL_DI
 MODEL_DIR = os.environ.get('AUDIO_SEPARATOR_MODEL_DIR', os.path.join(os.path.expanduser('~'), '.cache', 'audio-separator-models'))
 
 
-def separate(path, outdir, separator='roformer', overlap=1):
+def separate(path, outdir, separator='demucs', overlap=1):
     sub, ext, names = SEPARATORS[separator]
     d = os.path.join(outdir, sub)
     stems = {s: os.path.join(d, f'{s}.{ext}') for s in names}
@@ -281,7 +281,7 @@ def line_stats(notes, beat_t, bar_starts):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('ref'); ap.add_argument('--name'); ap.add_argument('--stems', action='store_true')
-    ap.add_argument('--separator', choices=sorted(SEPARATORS), default='roformer', help='stem separator for --stems (cached per separator)')
+    ap.add_argument('--separator', choices=sorted(SEPARATORS), default='demucs', help='stem separator for --stems (cached per separator)')
     ap.add_argument('--overlap', type=int, default=1, help='RoFormer overlapping windows (2 = model default, twice the time)')
     ap.add_argument('--beats-per-bar', type=int, default=4)
     ap.add_argument('--max-bpm', type=float, default=140, help='fold faster beat tracks down by half (raise for fast genres)')

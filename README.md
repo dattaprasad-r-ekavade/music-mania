@@ -21,6 +21,9 @@ Repo: https://github.com/dattaprasad-r-ekavade/music-mania
 | `tools/similarity.py`, `tools/notes.mjs` | Copying guard: a piece's lines against reference MIDI (interval + rhythm runs, shared 6-note patterns) |
 | `tools/critique.mjs`, `tools/lib/theory.mjs` | Melody critique against measured targets (docs/theory-western.md) |
 | `tools/lib/raga.mjs` | Raga, taal and ornament data and checks (docs/theory-indian.md) |
+| `tools/visualize.py` | PNGs the agent can look at: `mix` (spectrogram, loudness, bands per section, width), `stems`, `roll` (piano roll, register clashes with the lead), `compare`; `render.mjs --png` writes them to work/ |
+| `tools/embed.py` | CLAP / MERT audio embeddings: similarity of a render to references, CLAP text-prompt descriptors |
+| `CLAUDE.md` | Handoff for the next agent: environment quirks, storage, loop, state of the work |
 | `tools/profiles.py` | Several reference profiles side by side (tempo, key, loudness, bands, form, grooves, line statistics) |
 | `tools/master.py` | Matchering 2.0: master a render to a reference's loudness, balance, peak and width |
 | `refs/` | Reference profiles (committed); reference audio, stems and MIDI stay out of git |

@@ -1,16 +1,23 @@
 """Learns the reusable facts of a reference track: tempo, bars, key, chords, form, drum grids and mix profile.
 
-Usage: python -I tools/analyze.py REF.wav|mp3 [--name NAME] [--stems]
+Usage: python -I tools/analyze.py REF.wav|mp3 [--name NAME] [--stems [--separator roformer|demucs] [--overlap 1|2]]
 
-Writes refs/<name>.profile.json. With --stems it also separates the track (Demucs htdemucs), transcribes
-the melodic stems to MIDI (Basic Pitch) and adds melody and bass statistics; stems and MIDI go to
-refs/<name>/ (never committed: they are derived from someone else's recording).
+Writes refs/<name>.profile.json. With --stems it also separates the track, transcribes the melodic
+stems to MIDI (Basic Pitch) and adds melody and bass statistics plus a 'separator' field. Stems and
+MIDI never go to git (they are derived from someone else's recording); they are cached per separator:
+  --separator roformer (default)  BS-RoFormer SW via python-audio-separator: drums, bass, vocals, piano,
+                                  guitar, other -> refs/<name>/roformer/*.flac. A horn or flute lead stays
+                                  in 'other' without the piano. About 6x real time on a laptop CPU
+                                  (~25 min for a 4-minute song; --overlap 2 doubles it), once per track.
+  --separator demucs              Demucs htdemucs: drums, bass, vocals, other -> refs/<name>/htdemucs/*.wav.
+                                  About 1x real time; the lead shares 'other' with piano and guitar.
+MIDI goes next to the stems, and refs/<name>/*.mid mirrors the latest run (input for similarity.py).
 
 What a profile is for: form and bar counts, tempo, harmonic habits (Roman numerals), drum grids in the
 `drums()` string format of tools/lib/music.mjs, and per-section mix targets for measure.py --ref.
 It deliberately keeps no melody, only statistics about it. Writing an original melody stays our job.
 """
-import argparse, json, os, sys, warnings
+import argparse, json, os, shutil, sys, warnings
 from collections import Counter
 import numpy as np, soundfile as sf
 from scipy.signal import butter, lfilter, resample_poly, sosfilt
@@ -198,12 +205,34 @@ def sections(bar_feats, min_len=4, kernel=8, same=0.7):
 
 
 # --- Notes (with --stems) -----------------------------------------------------------------------
-def separate(path, outdir):
-    d = os.path.join(outdir, 'htdemucs')
-    stems = {s: os.path.join(d, f'{s}.wav') for s in ('drums', 'bass', 'other', 'vocals')}
-    if not all(os.path.exists(p) for p in stems.values()):  # separation is the slow part; reuse it
+# Separators: stems are cached per separator in refs/<name>/<dir>/ (separation is the slow part).
+#   demucs:   Demucs htdemucs, 4 stems (lead instruments share 'other' with piano and guitar).
+#   roformer: BS-RoFormer SW (jarredou), 6 stems via python-audio-separator; vocals SDR 11.3 vs 8-9 for
+#             htdemucs, and piano and guitar get their own stems, so a horn or flute lead is left in 'other'.
+SEPARATORS = {'demucs': ('htdemucs', 'wav', ('drums', 'bass', 'other', 'vocals')),
+              'roformer': ('roformer', 'flac', ('drums', 'bass', 'other', 'vocals', 'guitar', 'piano'))}
+ROFORMER_MODEL = 'BS-Roformer-SW.ckpt'   # 699 MB, downloaded once into MODEL_DIR
+MODEL_DIR = os.environ.get('AUDIO_SEPARATOR_MODEL_DIR', os.path.join(os.path.expanduser('~'), '.cache', 'audio-separator-models'))
+
+
+def separate(path, outdir, separator='roformer', overlap=1):
+    sub, ext, names = SEPARATORS[separator]
+    d = os.path.join(outdir, sub)
+    stems = {s: os.path.join(d, f'{s}.{ext}') for s in names}
+    if all(os.path.exists(p) for p in stems.values()): return stems
+    if separator == 'demucs':
         from demucs.separate import main as demucs_main
         demucs_main(['-n', 'htdemucs', '-o', outdir, '--filename', '{stem}.{ext}', path])
+        return stems
+    import logging
+    from audio_separator.separator import Separator
+    # overlap=1 (no overlapping 9.3 s windows) halves the CPU time of the model's default 2.
+    sep = Separator(log_level=logging.WARNING, model_file_dir=MODEL_DIR, output_dir=d, output_format='FLAC',
+                    mdxc_params={'segment_size': 256, 'override_model_segment_size': False, 'batch_size': 1, 'overlap': overlap, 'pitch_shift': 0})
+    sep.load_model(ROFORMER_MODEL)
+    sep.separate(path, custom_output_names={s: s for s in names})
+    missing = [p for p in stems.values() if not os.path.exists(p)]
+    if missing: raise RuntimeError(f'separator did not write {missing}')
     return stems
 
 
@@ -252,6 +281,8 @@ def line_stats(notes, beat_t, bar_starts):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('ref'); ap.add_argument('--name'); ap.add_argument('--stems', action='store_true')
+    ap.add_argument('--separator', choices=sorted(SEPARATORS), default='roformer', help='stem separator for --stems (cached per separator)')
+    ap.add_argument('--overlap', type=int, default=1, help='RoFormer overlapping windows (2 = model default, twice the time)')
     ap.add_argument('--beats-per-bar', type=int, default=4)
     ap.add_argument('--max-bpm', type=float, default=140, help='fold faster beat tracks down by half (raise for fast genres)')
     a = ap.parse_args()
@@ -284,7 +315,7 @@ def main():
     stems = None
     if a.stems:
         sdir = os.path.join(ROOT, 'refs', name)
-        stems = separate(os.path.abspath(a.ref), sdir)
+        stems = separate(os.path.abspath(a.ref), sdir, a.separator, a.overlap)
         perc, _ = librosa.load(stems['drums'], sr=ysr)
     grids = drum_grids(perc, ysr, grid)
 
@@ -311,10 +342,18 @@ def main():
         'form': form,
     }
     if stems:
+        profile['separator'] = a.separator
         lines = {}
-        for s in ('vocals', 'other', 'bass'):
-            mid = os.path.join(ROOT, 'refs', name, f'{s}.mid')
+        sdir = os.path.join(ROOT, 'refs', name)
+        for s in ('vocals', 'other', 'piano', 'guitar', 'bass'):
+            top = os.path.join(sdir, f'{s}.mid')
+            if s not in stems:   # a stem this separator lacks: drop a stale copy from another separator
+                if os.path.exists(top): os.remove(top)
+                continue
+            # MIDI is kept per separator; refs/<name>/*.mid mirrors the latest run (similarity.py input).
+            mid = os.path.join(os.path.dirname(stems[s]), f'{s}.mid')
             notes = transcribe(stems[s], mid)
+            shutil.copyfile(mid, top)
             st = line_stats(skyline(notes) if s != 'bass' else notes, beat_t, bar_starts)
             if st: lines[s] = st
         profile['lines'] = lines

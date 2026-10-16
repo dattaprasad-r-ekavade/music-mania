@@ -9,3 +9,18 @@ pretty_midi
 mir_eval
 resampy
 matchering>=2.0.6
+# analyze.py --separator roformer (default): BS-RoFormer SW, 6 stems. audio-separator's declared deps
+# pull a newer torch + torchvision + onnx, so install it without them:
+#   pip install --no-deps audio-separator==0.47.0
+# The model (BS-Roformer-SW.ckpt, 699 MB) downloads on first use to ~/.cache/audio-separator-models
+# (or $AUDIO_SEPARATOR_MODEL_DIR).
+beartype
+ml_collections
+rotary-embedding-torch
+einops
+audioread
+pydub
+# tools/embed.py (CLAP / MERT embeddings). transformers 5.3 is the newest that keeps huggingface_hub 1.4.1;
+# the models (~1.1 GB: laion/larger_clap_music, m-a-p/MERT-v1-95M) download to the Hugging Face cache on first use.
+transformers==5.3.0
+huggingface_hub>=1.4,<2

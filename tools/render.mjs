@@ -1,6 +1,7 @@
 // Renders a piece: node tools/render.mjs pieces/<name>.mjs
 // Writes work/<name>.txt (generated script), out/<name>.scraft and out/<name>.wav, verifies the
 // predicted clip ids against SoundCraft's output, then prints measurements (tools/measure.py).
+// --png also draws work/<name>.mix.png (and work/<name>.stems.png with --stems) via tools/visualize.py.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -13,7 +14,7 @@ const CLI = 'C:/Program Files/SoundCraft/soundcraft-cli.exe';
 const PY = process.env.PYTHON ?? spawnSync('python -c "import sys; print(sys.executable)"', { shell: true, encoding: 'utf8' }).stdout?.trim();
 const python = args => {
   const r = spawnSync(PY || 'python', args, { stdio: 'inherit' });
-  if (r.error || r.status !== 0) { console.error(`measure.py failed: ${r.error?.message ?? `exit ${r.status}`}`); process.exitCode = 1; }
+  if (r.error || r.status !== 0) { console.error(`${path.basename(args[1])} failed: ${r.error?.message ?? `exit ${r.status}`}`); process.exitCode = 1; }
 };
 const piecePath = path.resolve(process.argv[2]);
 const name = path.basename(piecePath, '.mjs');
@@ -48,6 +49,8 @@ const args = ['-I', path.join(root, 'tools', 'measure.py'), path.join(root, 'out
 if (sections) args.push(JSON.stringify(sections));
 if (ref) args.push('--ref', path.join(root, ref));
 python(args);
+const png = process.argv.includes('--png'), secArgs = ['--bpm', String(bpm), '--beats', String(beats), ...(sections ? ['--sections', JSON.stringify(sections)] : [])];
+if (png) python(['-I', path.join(root, 'tools', 'visualize.py'), 'mix', path.join(root, 'work', `${name}.mix.png`), path.join(root, 'out', `${name}.wav`), ...secArgs, ...(ref ? ['--ref', path.join(root, ref)] : [])]);
 
 // --stems: re-bounce each instrument group alone (the others muted) and compare levels per section.
 if (process.argv.includes('--stems')) {
@@ -59,4 +62,5 @@ if (process.argv.includes('--stems')) {
     stems.push(g.split(' ')[0], file);
   }
   python(['-I', path.join(root, 'tools', 'measure.py'), '--stems', String(bpm), String(beats), JSON.stringify(sections ?? {}), ...stems]);
+  if (png) python(['-I', path.join(root, 'tools', 'visualize.py'), 'stems', path.join(root, 'work', `${name}.stems.png`), ...secArgs, ...stems.flatMap((s, i) => i % 2 ? [] : [`${s}=${stems[i + 1]}`])]);
 }

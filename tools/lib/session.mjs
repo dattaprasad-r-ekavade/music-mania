@@ -173,6 +173,11 @@ export class Session {
       Object.entries(inst.sends ?? {}).forEach(([r, db], slot) => cmd('mix.send', { track: grp, slot, bus: `${r} bus`, level_db: db }));
       if (inst.volume != null) cmd('mix.volume', { tracks: [grp], db: inst.volume });
       if (inst.pan != null) cmd('mix.pan', { tracks: [grp], pan: inst.pan });
+      // SoundCraft holds the first point back to the start of the session (measured: Sandhya's strings sat 14 dB
+      // low until their first swell). Anchor each automated parameter at its static value on bar 1.
+      for (const param of new Set(inst.automation.map(a => a.param)))
+        if (!inst.automation.some(a => a.param === param && a.t === 0) && ['volume', 'pan'].includes(param))
+          inst.automation.push({ param, t: 0, value: param === 'volume' ? 0 : inst.pan ?? 0 });
       for (const a of inst.automation.sort((x, y) => x.t - y.t)) {
         const at = `${Math.floor(a.t / this.bar) + 1}|${Math.floor(a.t % this.bar / TPB) + 1}|${String(a.t % TPB).padStart(3, '0')}`;
         cmd('automation.set_point', { track: grp, param: a.param, at, value: a.param === 'volume' ? (inst.volume ?? 0) + a.value : a.value });

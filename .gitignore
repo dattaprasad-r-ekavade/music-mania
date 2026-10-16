@@ -20,6 +20,8 @@ refs/*/
 refs/*.wav
 refs/*.mp3
 refs/*.flac
+# Embedding caches from tools/embed.py (R2: node tools/assets.mjs push refs/<name>.clap.npz)
+refs/*.npz
 
 # Sample libraries are nested clones (download separately; see samples/README.md).
 # Do not add them as gitlinks.

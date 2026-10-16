@@ -64,6 +64,10 @@ Look at the PNGs with the Read tool (`work/<name>.mix.png`, `.stems.png`; `pytho
 - Open owner decisions: recreate the GitHub repo to free 615 MB of old LFS storage (history already rewritten); lower the maximizer ceiling on the loud pieces.
 - A stray `node --test tests/comment-attachment-upload.test.js` process from another project was running on the machine; not ours.
 
+## Next research-backed steps
+
+See [docs/research-roadmap.md](docs/research-roadmap.md): sfizz pilot (SFZ + pitch-bend meend), OpenAIR convolution reverb, Iowa MIS / Philharmonia samples, Freesound CC0 Indian kit, Surge XT via DawDreamer, a focus-music profile.
+
 ## Working agreements
 
 - Every musical decision lives in the generator; renders are reproducible (seeded humanisation).

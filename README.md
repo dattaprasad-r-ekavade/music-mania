@@ -23,6 +23,7 @@ Repo: https://github.com/dattaprasad-r-ekavade/music-mania
 | `tools/lib/raga.mjs` | Raga, taal and ornament data and checks (docs/theory-indian.md) |
 | `tools/visualize.py` | PNGs the agent can look at: `mix` (spectrogram, loudness, bands per section, width), `stems`, `roll` (piano roll, register clashes with the lead), `compare`; `render.mjs --png` writes them to work/ |
 | `tools/embed.py` | CLAP / MERT audio embeddings: similarity of a render to references, CLAP text-prompt descriptors |
+| `docs/research-roadmap.md` | Research to build on: focus/productivity music, sfizz/DawDreamer/Pedalboard/Surge XT, convolution IRs, more sample libraries, suggested order |
 | `CLAUDE.md` | Handoff for the next agent: environment quirks, storage, loop, state of the work |
 | `tools/profiles.py` | Several reference profiles side by side (tempo, key, loudness, bands, form, grooves, line statistics) |
 | `tools/master.py` | Matchering 2.0: master a render to a reference's loudness, balance, peak and width |

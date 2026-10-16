@@ -69,6 +69,7 @@ A piece that returns `ref: 'refs/<name>.profile.json'` from its generator gets a
 | `spring-dream` | 3:46, 72 BPM, F Lydian | Triplet harp, glockenspiel, flute melody; clarinet with pizzicato and marimba; violins reprise with flute countermelody. −14.0 LUFS. Awaiting review |
 | `pahadi-winter` | 3:36, 62 BPM, raga Pahadi on D | Harp tanpura cycle, cello drone, flute as bansuri with kan notes, piano as santoor, soft keherwa. −14.3 LUFS. Awaiting review |
 | `city-lights` | 3:26, 86 BPM, D♭ | Neo-soul / lo-fi: swung drum machine, saturated piano comping, synth bass, harmon-muted trumpet, pizzicato break. −15.0 LUFS. Awaiting review |
+| `sandhya` | 3:57, 92 BPM, E minor | Hindi-film-style ballad written from the reference profiles (Tum Hi Ho, Kesariya, Channa Mereya): bansuri-style flute lead, tenor sax interlude, Dan Tranh as santoor, dholak on the VCSL hand kit over a 3-3-2 kick, staged strings by fader automation. −12.2 LUFS. Copying guard clean. Awaiting review |
 | `neon-bhairav` | 3:24, 100 BPM, raga Bhairav on C | Cyberpunk fusion: rolling synth bass, delayed arp, gliding synth lead doubled by oboe-shehnai, four-on-the-floor plus tabla-style hand drums. −11.4 LUFS. Awaiting review |
 
 ## Singing: what we measured (2026-10-16)

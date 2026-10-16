@@ -10,9 +10,13 @@ Source: https://github.com/sfzinstruments/SalamanderGrandPiano (original: https:
 Licence: CC0 1.0 (public domain). The readme asks us not to sell the samples directly, and to credit Versilian Studios/Sam Gossner and Simon Dalzell with a link to http://vis.versilstudios.net/vsco-community.html.
 Source: https://github.com/sgossner/VSCO-2-CE
 
+**Versilian Community Sample Library (VCSL)** by Versilian Studios (Sam Gossner) and contributors.
+Licence: CC0 1.0 (public domain). Credit requested in the same way as VSCO 2 CE.
+Source: https://github.com/sgossner/VCSL
+
 Credit line for releases (YouTube descriptions, album notes, licence documents):
 
-> Piano: Salamander Grand Piano by Alexander Holm (CC BY 3.0). Orchestral samples: VSCO 2 Community Edition by Versilian Studios and Simon Dalzell.
+> Piano: Salamander Grand Piano by Alexander Holm (CC BY 3.0). Orchestral samples: VSCO 2 Community Edition by Versilian Studios and Simon Dalzell. Additional samples: Versilian Community Sample Library (VCSL) by Versilian Studios.
 
 ## Track origins
 
@@ -79,4 +83,14 @@ neon-bhairav.wav  (cyberpunk with Indian fusion (raga Bhairav))
   Human input: theme brief by the owner; no human melodic or arrangement contribution yet
   Tools: SoundCraft 0.7.0 (MIT OR Apache-2.0): sampler, built-in subtractive_synth and drum_synth, EQ, compressor, saturator, chorus, delay, reverb, maximizer
   Third-party material: the sample libraries above (VSCO 2 CE, Salamander), played as instruments; no loops, presets or existing compositions
+
+sandhya.wav  (Hindi-film-style ballad, E minor, 92 BPM)
+  Made: 2026-10-16
+  Composition and arrangement: Claude (Opus 5.5), via pieces/sandhya.mjs (original melody, harmony and rhythm)
+  Brief: style statistics from three Hindi film songs (tempo, key type, melodic step/leap and syncopation rates,
+    3-3-2 kick, mix balance) via tools/analyze.py; no melody, harmony or audio taken from them.
+    tools/similarity.py against their transcriptions: longest shared run under 6 notes, no flags.
+  Human input: brief ("use references to learn, then build") by the owner; no human melodic contribution yet
+  Tools: SoundCraft 0.7.0: sampler, subtractive_synth, drum_synth, EQ, compressor, saturator, plate reverb, maximizer
+  Third-party material: the sample libraries above (Salamander, VSCO 2 CE, VCSL), played as instruments
 ```

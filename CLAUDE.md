@@ -52,6 +52,7 @@ Look at the PNGs with the Read tool (`work/<name>.mix.png`, `.stems.png`; `pytho
 | `tools/profiles.py` | Profiles side by side → a brief |
 | `tools/similarity.py`, `tools/notes.mjs` | Copying guard (symbolic) |
 | `tools/master.py` | Matchering to a reference |
+| `video/make.mjs`, `video/src/` | YouTube videos: Remotion pixel-art loop per piece, ffmpeg to full length with audio, thumbnail, upload text, R2 (README "Videos") |
 | `tools/zones.py` | Builds `samples/zones.json`; `--only a,b` rebuilds just those (pull their folders from R2 first) |
 
 ## State of the work (2026-10-16)

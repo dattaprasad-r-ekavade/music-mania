@@ -24,6 +24,7 @@ Repo: https://github.com/dattaprasad-r-ekavade/music-mania
 | `tools/visualize.py` | PNGs the agent can look at: `mix` (spectrogram, loudness, bands per section, width), `stems`, `roll` (piano roll, register clashes with the lead), `compare`; `render.mjs --png` writes them to work/ |
 | `tools/embed.py` | CLAP / MERT audio embeddings: similarity of a render to references, CLAP text-prompt descriptors |
 | `docs/research-roadmap.md` | Research to build on: focus/productivity music, sfizz/DawDreamer/Pedalboard/Surge XT, convolution IRs, more sample libraries, suggested order |
+| `video/` | YouTube videos: Remotion pixel-art loops (`src/scenes/*.js`) and `make.mjs` (loop → full-length MP4 with audio, thumbnail, upload text, R2) |
 | `CLAUDE.md` | Handoff for the next agent: environment quirks, storage, loop, state of the work |
 | `tools/profiles.py` | Several reference profiles side by side (tempo, key, loudness, bands, form, grooves, line statistics) |
 | `tools/master.py` | Matchering 2.0: master a render to a reference's loudness, balance, peak and width |
@@ -53,6 +54,18 @@ python -I -X utf8 tools/sing.py pieces/duniya-gol-hai.json
 Checks after every render: per-section stem levels (a lead should sit 2–3 dB above its accompaniment, pads 6–8 dB below), octave-band balance (about +3 dB at 125 Hz and −8 to −12 dB at 4 kHz relative to 1 kHz), clicks, jumps and drops, and a silent tail. Then a person listens. Measurements cannot judge whether it is beautiful or whether a melody resembles an existing song.
 
 **Deliver only the WAV/MP3.** A `.scraft` session copies every raw sample it uses into `out/Audio Files/`, and VSCO asks that its samples not be redistributed or sold as samples.
+
+## Videos for YouTube
+
+Lofi-style looping pixel-art scenes, one per piece, drawn in code (no image assets). Each scene is a 60 s seamless loop (all motion periodic in the loop), rendered once by Remotion and repeated by ffmpeg to the track length.
+
+```
+cd video && npm install            # once (~330 MB node_modules, gitignored)
+node video/make.mjs golden-hour    # → out/<name>.video.mp4, .thumb.jpg, .youtube.txt, all pushed to R2
+npx remotion studio src/index.js   # (in video/) preview and tweak scenes live
+```
+
+Scenes: `golden-hour` (riverside promenade at sunset, strollers, birds), `neon-bhairav` (cyberpunk Indian city: temple spires, neon, rain, flying cars), `pahadi-winter` (Himalayan ridge at dawn: hikers, prayer flags, fog, snow). Add a scene: a `draw(ctx, t, frame)` function on a 384x216 canvas in `video/src/scenes/`, registered in `scenes/index.js` and `make.mjs` `INFO`. Keep motion loop-safe: `osc(t, k)` with integer k, `wrap()` over whole periods, sprite cycles that divide 1800 frames. Golden Hour takes ~6.5 min to build. Remotion's free licence covers individuals and companies of up to 3 people, commercial videos included.
 
 ## Learning from references
 

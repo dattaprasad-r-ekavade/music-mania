@@ -18,6 +18,10 @@ Credit line for releases (YouTube descriptions, album notes, licence documents):
 
 > Piano: Salamander Grand Piano by Alexander Holm (CC BY 3.0). Orchestral samples: VSCO 2 Community Edition by Versilian Studios and Simon Dalzell. Additional samples: Versilian Community Sample Library (VCSL) by Versilian Studios.
 
+## Video tools
+
+Videos (`video/`) are drawn in code with Remotion (free licence for individuals, commercial use allowed: https://www.remotion.dev/docs/license). Title font: Press Start 2P by CodeMan38 (SIL Open Font License), via @remotion/google-fonts. No third-party images or footage.
+
 ## Track origins
 
 ```

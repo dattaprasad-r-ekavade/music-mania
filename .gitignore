@@ -33,3 +33,6 @@ samples/vcsl/
 Thumbs.db
 .DS_Store
 *.swp
+
+# Video project dependencies (video/package.json)
+video/node_modules/

@@ -38,8 +38,27 @@ Already evaluated and rejected (RULES 4d): RoFormer separation via audio-separat
 | **VCSL** (have) | CC0 | VCSL 2 is being crowdfunded |
 | **Indian instruments** | No verified CC library found. Lost Stories Academy packs, SampleScience "Sounds of India", Rajan Somasundaram percussion: "free/royalty-free" claims **(unverified)** | Freesound CC0 is the safe free route; recording a real bansuri/tabla player is best for sound and ownership |
 
+### Sample source assessment (2026-10-21, owner's list)
+
+Our use is finished tracks and videos only, never resale or redistribution as samples, so "not for redistribution" terms do not block us.
+
+| Source | Status | Verdict |
+| --- | --- | --- |
+| VSCO 2 CE (CC0) | **Using** (R2) | Keep |
+| VCSL (CC0) | **Using** (R2): vibes, sax, Dan Tranh, upright, kalimba, hand kit | Keep; add instruments as pieces need them |
+| University of Iowa MIS (unrestricted) | Not yet | **Add**: dry single notes, extra orchestral colours, ideal with convolution reverb |
+| Philharmonia (finished-music use; no redistribution as samples) | Not yet | **Add**: short articulations, guitar, mandolin, banjo, wide percussion; complements VSCO sustains |
+| Freesound (per-file licence) | Planned (Indian kit) | **Use per file**: CC0 / CC-BY only (credit CC-BY), never CC-BY-NC; manual download avoids API terms (check them before scripting) |
+| OpenGameArt (CC0 files) | New | **Use for video ambience and lofi texture** (rain, birds, city hum, vinyl crackle); CC0 files only |
+| Google NSynth (CC BY 4.0) | New | **Skip for instruments**: 4 s, 16 kHz mono notes (nothing above 8 kHz); at most an odd synthetic texture |
+| Pianobook (per-instrument licence) | New | **Maybe**: many allow use in own music; Decent Sampler format (WAV + XML) is importable; read each licence |
+| Splice (subscription) | New | **Avoid for now**: popular loops trigger YouTube Content ID claims across many tracks; conflicts with original composition |
+
+Indian instruments remain the gap; Freesound CC0 is the best free route.
+
 ## 4. Suggested order
 
+0. Sample additions: Iowa MIS and Philharmonia via `zones.py` → R2; Freesound CC0 tabla strokes and tanpura drone; OpenGameArt / Freesound ambience for videos.
 1. sfizz pilot: VSCO flute SFZ with pitch-bend meend vs the current flute (`embed.py`, `visualize.py`, then a listen).
 2. OpenAIR concert-hall convolution on Golden Hour through Pedalboard vs the plate.
 3. Iowa MIS solo instruments into `zones.py`.

@@ -60,7 +60,9 @@ For a revision the owner will judge: `python -I tools/feedback.py snapshot <name
 ## State of the work (2026-10-16)
 
 - Pieces: golden-hour (owner 10/10), mass-entry, spring-dream, pahadi-winter, city-lights, neon-bhairav (awaiting review), sandhya (review 1 applied: warmer intro, percussion low end, flute levels).
-- **Next for Sandhya** (from critique.mjs and the mix PNG, not yet done): melody is too on-beat and even (see RULES 4d); top end dark (4 kHz below target in 5/8 sections, 8 kHz ~9 dB under reference); low-mids 6-9 dB under reference; sections don't breathe (flat level bars 9-80); violins above the flute for ~35 bars; cellos only ~2.5 dB under the lead. Owner approved the flute line as is: ask before changing melody.
+- **Sandhya**: review 2 (mix and arrangement) chosen by the owner in the first A/B (RULES 4d). Still open: melody too on-beat and even (RULES 4d critique; ask before changing it, the owner likes the flute line); breaths before the mukhda are inaudible (make them an arrangement drop, not just a fader dip); low-mids still thinner than the references.
+- **Preference log**: `feedback/feedback.jsonl` has 1 owner choice. Use `tools/feedback.py snapshot/pair/log` on every revision the owner judges; `report` after 20+ choices.
+- **Samples to add next** (docs/research-roadmap.md §3): Iowa MIS, Philharmonia, Freesound CC0 Indian kit, CC0 ambience for videos. Avoid Splice loops (Content ID).
 - Embeddings: Sandhya is the closest of our pieces to the Hindi references but outside their cluster (RULES 4d); Intro and Outro drift most.
 - Copying guard: match every voice of the Demucs "other" MIDI, not just its skyline (RULES 4d; Demucs catches 76 % of the City Lights trumpet). RoFormer separation does not work here: keep Demucs.
 - **Sampler clamp warning fires in six older pieces** (all but golden-hour): fix each when it is next revised (lower `sampler.level`, raise group `volume`).

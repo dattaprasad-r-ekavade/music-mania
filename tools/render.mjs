@@ -49,6 +49,8 @@ const args = ['-I', path.join(root, 'tools', 'measure.py'), path.join(root, 'out
 if (sections) args.push(JSON.stringify(sections));
 if (ref) args.push('--ref', path.join(root, ref));
 python(args);
+// --aes: Audiobox Aesthetics (tools/aesthetics.py), whole track and per section.
+if (process.argv.includes('--aes')) python(['-I', path.join(root, 'tools', 'aesthetics.py'), path.join(root, 'out', `${name}.wav`), '--bpm', String(bpm), '--beats', String(beats), ...(sections ? ['--sections', JSON.stringify(sections)] : [])]);
 const png = process.argv.includes('--png'), secArgs = ['--bpm', String(bpm), '--beats', String(beats), ...(sections ? ['--sections', JSON.stringify(sections)] : [])];
 if (png) python(['-I', path.join(root, 'tools', 'visualize.py'), 'mix', path.join(root, 'work', `${name}.mix.png`), path.join(root, 'out', `${name}.wav`), ...secArgs, ...(ref ? ['--ref', path.join(root, ref)] : [])]);
 

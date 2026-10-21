@@ -25,6 +25,7 @@ Repo: https://github.com/dattaprasad-r-ekavade/music-mania
 | `tools/embed.py` | CLAP / MERT audio embeddings: similarity of a render to references, CLAP text-prompt descriptors |
 | `docs/research-roadmap.md` | Research to build on: focus/productivity music, sfizz/DawDreamer/Pedalboard/Surge XT, convolution IRs, more sample libraries, suggested order |
 | `video/` | YouTube videos: Remotion pixel-art loops (`src/scenes/*.js`) and `make.mjs` (loop → full-length MP4 with audio, thumbnail, upload text, R2) |
+| `tools/aesthetics.py`, `tools/feedback.py` | Learned quality scores (Audiobox Aesthetics) and the owner A/B preference log that calibrates every metric |
 | `CLAUDE.md` | Handoff for the next agent: environment quirks, storage, loop, state of the work |
 | `tools/profiles.py` | Several reference profiles side by side (tempo, key, loudness, bands, form, grooves, line statistics) |
 | `tools/master.py` | Matchering 2.0: master a render to a reference's loudness, balance, peak and width |

@@ -125,6 +125,8 @@ What the three share and our pieces lack: tempo 89–96; the vocal moves **by st
 
 **Separation (2026-10-16): keep Demucs.** RoFormer through python-audio-separator 0.47 (BS-RoFormer SW, Viperx-1297) gave silent or misrouted stems on torch 2.10 CPU, and costs ~7x real time on this 4-core i5 (25-40 min per song). `analyze.py --separator` defaults to `demucs`; `roformer` is marked experimental. Demucs already transcribes 76 % of City Lights' trumpet notes (onset recall): the copying guard missed it because `similarity.py` takes the skyline of a mixed stem. **Fix next in the matching:** compare every voice of the 'other' MIDI, not only its top line. If separation is revisited: Demucs `htdemucs_6s` (piano stem), or ZFTurbo's MSST inference for SW.
 
+**Aesthetics scores (`tools/aesthetics.py`, 2026-10-21).** Audiobox Aesthetics, 1-10: Golden Hour CE 7.63 / PQ 7.95, Sandhya 7.52 / 8.13 (Intro CE 7.37 lowest, Mukhda 7.63), Tum Hi Ho 7.43 / 8.22. Deliberate damage on 60 s of Golden Hour: low-pass + crush -0.9 PQ / -0.5 CE; 8 kHz resample -0.4 PQ / -0.3 CE (while its octave bands read *brighter*, from distortion). Compressed scale: < 0.2 is noise. Not yet validated against the owner: log A/B choices with `tools/feedback.py` and check `report` before using it as a target.
+
 ## 5. Mix rules (measured targets)
 
 These are the numbers we mix toward. If a stem check fails, fix levels in the generator and re-render.

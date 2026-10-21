@@ -25,3 +25,9 @@ pydub
 # the models (~1.1 GB: laion/larger_clap_music, m-a-p/MERT-v1-95M) download to the Hugging Face cache on first use.
 transformers==5.3.0
 huggingface_hub>=1.4,<2
+
+# Audiobox Aesthetics (tools/aesthetics.py, tools/feedback.py): keep torchaudio matched to torch (2.10), then
+#   pip install --no-deps audiobox_aesthetics   (it would otherwise pull torchaudio 2.11). Files are read with soundfile (torchaudio 2.10 needs torchcodec to load).
+torchaudio==2.10.0
+submitit
+cloudpickle

@@ -34,7 +34,7 @@ python -I tools/similarity.py pieces/<name>.mjs refs/*/*.mid   # copying guard b
 ffmpeg -i out/<name>.wav -b:a 256k out/<name>.mp3
 node tools/assets.mjs push out/<name>.wav out/<name>.mp3
 ```
-Look at the PNGs with the Read tool (`work/<name>.mix.png`, `.stems.png`; `python -I tools/visualize.py roll …` for a piano roll). Then the owner listens. Record review notes and what changed in RULES.md §6 / §4c-4d.
+For a revision the owner will judge: `python -I tools/feedback.py snapshot <name>` before, `pair <name>` after; log the owner's pick. Look at the PNGs with the Read tool (`work/<name>.mix.png`, `.stems.png`; `python -I tools/visualize.py roll …` for a piano roll). Then the owner listens. Record review notes and what changed in RULES.md §6 / §4c-4d.
 
 ## Tool map
 
@@ -53,6 +53,8 @@ Look at the PNGs with the Read tool (`work/<name>.mix.png`, `.stems.png`; `pytho
 | `tools/similarity.py`, `tools/notes.mjs` | Copying guard (symbolic) |
 | `tools/master.py` | Matchering to a reference |
 | `video/make.mjs`, `video/src/` | YouTube videos: Remotion pixel-art loop per piece, ffmpeg to full length with audio, thumbnail, upload text, R2 (README "Videos") |
+| `tools/aesthetics.py`, `render.mjs --aes` | Audiobox Aesthetics scores (CE/CU/PC/PQ), whole and per section |
+| `tools/feedback.py` | Owner A/B log: `snapshot` → change + render → `pair` → owner listens → `log <name> A|B|same "note"`; `report` = which metrics predict the owner |
 | `tools/zones.py` | Builds `samples/zones.json`; `--only a,b` rebuilds just those (pull their folders from R2 first) |
 
 ## State of the work (2026-10-16)

@@ -47,6 +47,21 @@ Already evaluated and rejected (RULES 4d): RoFormer separation via audio-separat
 5. Surge XT through DawDreamer for the synth pieces.
 6. Focus profile and a deep-work variant of one existing piece.
 
+## 5. Understanding music with AI (2026-10-21)
+
+The agent cannot take audio in; it hears through measurements, images (`visualize.py`) and models that listen for it.
+
+| Approach | State of the art | Use for us |
+| --- | --- | --- |
+| Audio-language models that describe music | Music Flamingo (NVIDIA, ICLR 2026): music-specialised captions and Q&A (human rating 8.3/10; self-reported best on 10+ benchmarks) but **non-commercial licence** and datacenter GPUs. Qwen2-Audio, LLark: general / older. Gemini API audio: describe, summarise, emotion, timestamped questions | Optional critic via Gemini (API key, paid): ask what it hears vs our intent. All of these hallucinate (HalluAudio benchmark): use for mismatches, not verdicts |
+| Learned quality scores | **Audiobox Aesthetics** (Meta, CC-BY 4.0): CE / CU / PC / PQ without a reference. SongEval (2025): coherence, memorability, structure clarity, musicality, trained on sung songs | **Built:** `tools/aesthetics.py`, `render.mjs --aes`. Calibration in RULES 4d: compressed scale, < 0.2 is noise |
+| Symbolic reasoning by LLMs | ABC-Eval (2025) and MSU-Bench (2025): leading LLMs have clear limits on scores; ChatMusician beats GPT-3.5 on theory but leans Irish and hallucinates | Keep theory as code checks (critique.mjs, raga.mjs, similarity.py), not free reasoning |
+| Learning from human preference | MusicRL (Google, ICML 2024): ~300k preference pairs improved a generator; prompt fit and audio quality explain only part of preference | **Built:** `tools/feedback.py` A/B log (`feedback/feedback.jsonl`, committed) and `report`: after 20-50 owner choices, keep the metrics that predict the owner |
+
+Next: collect A/B choices on each revision; optionally a Gemini audio critic; revisit Music Flamingo only for private research.
+
+Sources: [Music Flamingo](https://proceedings.iclr.cc/paper_files/paper/2026/hash/7f64034009f4a5fa417a57e1a987c5cd-Abstract-Conference.html) ([model card](https://huggingface.co/nvidia/music-flamingo-hf)), [MuChoMusic](https://arxiv.org/pdf/2408.01337), [HalluAudio](https://arxiv.org/pdf/2604.19300), [Gemini audio](https://ai.google.dev/gemini-api/docs/generate-content/audio), [Audiobox Aesthetics](https://arxiv.org/html/2502.05139v1), [Cyanite review](https://cyanite.ai/tag/music-industry/page/2), [SongEval](https://arxiv.org/pdf/2505.10793), [ABC-Eval](https://arxiv.org/html/2509.23350v1), [MSU-Bench](https://arxiv.org/abs/2511.20697v1), [MusicRL](https://proceedings.mlr.press/v235/cideron24a.html).
+
 ## Sources
 
 Productivity: [Cheah et al. review](https://livrepository.liverpool.ac.uk/3126302/), [cognitive task review](https://livrepository.liverpool.ac.uk/3166444/), [DZNE 2024](https://pub.dzne.de/record/272336), [Journal of Cognition](https://journalofcognition.org/articles/273), [PMC10162369](https://pmc.ncbi.nlm.nih.gov/articles/PMC10162369/), [Thompson et al. 2012](https://sites.utm.utoronto.ca/sites/sites.utm.utoronto.ca.glenn_website/files/download/ThompsonEtAl2012.pdf), [APMB 2018](https://riviste.unime.it/index.php/APMB/article/view/APMB.106.1.2018.OS1), [PMC7381464](https://pmc.ncbi.nlm.nih.gov/articles/PMC7381464), [PMC7066211](https://pmc.ncbi.nlm.nih.gov/articles/PMC7066211), [Brain.fm blog](https://www.brain.fm/blog/does-brain-fm-actually-work), [binaural meta-analysis](https://pubmed.ncbi.nlm.nih.gov/35842538/), [PopSci](https://www.popsci.com/science/do-binaural-beats-work-focus/).

@@ -57,7 +57,7 @@ export default function () {
 
   s.reverb('Hall', 'plate_reverb', { decay: 2.8, pre_delay: 30, damping: 9500, size: 80, low_cut: 250 });
   const pno = s.instrument('Piano', { zones: 'piano', sampler: { attack: 0.5, release: 500, velocity: 35 }, sends: { Hall: -10 }, volume: -1, inserts: [eq(3, 60), eq(2, 5000, 3)] });
-  const vc = s.instrument('Cellos', { zones: 'cellos', sampler: { attack: 300, release: 900, velocity: 40, level: 9 }, sends: { Hall: -7 }, volume: -1, pan: 0.1, inserts: [eq(3, 45)] });
+  const vc = s.instrument('Cellos', { zones: 'cellos', sampler: { attack: 300, release: 900, velocity: 40, level: 9 }, sends: { Hall: -7 }, volume: -5, pan: 0.1, inserts: [eq(3, 45)] }); // review 2: was 2.5 dB under the lead
   const va = s.instrument('Violas', { zones: 'violas', sampler: { attack: 400, release: 900, velocity: 40, level: 9 }, sends: { Hall: -5 }, volume: -4, pan: 0.3, inserts: [eq(3, 150)] });
   const vn = s.instrument('Violins', { zones: 'violins', sampler: { attack: 350, release: 900, velocity: 40, level: 10 }, sends: { Hall: -4 }, volume: -2, pan: -0.3, inserts: [eq(3, 200)] });
   const fl = s.instrument('Bansuri', { zones: 'flute_even', sampler: { attack: 60, release: 450, velocity: 40, level: 0 }, sends: { Hall: -6 }, volume: 0.5, inserts: [eq(2, 5000, 2)] });
@@ -73,9 +73,11 @@ export default function () {
     inserts: [eq(0, 100, 4, 1.2), { plugin: 'compressor', params: { threshold: -16, ratio: 3, attack: 8, release: 120, makeup: 2 } }], sends: { Hall: -18 }, volume: -2 });
   const hand = s.instrument('Dholak', { zones: 'hand', oneShot: true, sampler: { attack: 0.5, release: 300, velocity: 60 }, sends: { Hall: -14 }, volume: -8, pan: -0.15,
     inserts: [eq(3, 45), eq(0, 110, 5, 1.0)] }); // body under the doum (owner: "percussion needs a little bass"); the bass synth sits at 50-80 Hz
-  s.master('eq_1band', { type: 2, freq: 4000, gain: 4 });   // the references sit 10-20 dB brighter above 4 kHz than our lobby pieces
-  s.master('eq_1band', { type: 2, freq: 10000, gain: 3 });
-  s.master('maximizer', { threshold: -3.5, ceiling: -1.7 }); // -1.5 measured -0.99 dBTP
+  // Review 2 (mix PNG vs Tum Hi Ho): low-mids 6-9 dB thin at 250-500 Hz, 4 kHz under target in 5 of 8 sections, 8 kHz ~9 dB dark.
+  s.master('eq_1band', { type: 0, freq: 260, gain: 2, q: 1.2 });
+  s.master('eq_1band', { type: 2, freq: 3500, gain: 7 });   // the references sit 10-20 dB brighter above 4 kHz than our lobby pieces
+  s.master('eq_1band', { type: 2, freq: 8000, gain: 3.5 });
+  s.master('maximizer', { threshold: -2.5, ceiling: -2 }); // -1.7 measured -0.84 dBTP after the review-2 shelves
 
   // Piano: ballad arpeggio, bass note then chord tones in eighths (thinner when told to).
   let pv = null, bv = null;
@@ -96,13 +98,13 @@ export default function () {
     for (const { ch, at, beats } of chs) {
       cn = bassNote(ch, 43, 55, cn); vc.note(cn, t0 + at * TPB, beats * TPB - 40, vel - 4);
       vaV = voice(ch, 2, 57, 69, vaV); vaV.forEach(p => va.note(p, t0 + at * TPB + 20, beats * TPB - 40, vel));
-      if (violins) { vnV = voice(ch, 2, 67, 79, vnV); vnV.forEach(p => vn.note(p, t0 + at * TPB + 40, beats * TPB - 60, Math.min(78, vel - 4))); }
+      if (violins) { vnV = voice(ch, 2, 62, 74, vnV); /* under the flute: it sat above the lead for ~35 bars */ vnV.forEach(p => vn.note(p, t0 + at * TPB + 40, beats * TPB - 60, Math.min(78, vel - 4))); }
     }
   };
   // Santoor: each chord tone struck twice in quick succession, wandering in the upper register.
   const santoor = (t0, chs, vel) => {
     for (const { ch, at, beats } of chs) {
-      const v = voice(ch, 4, 59, 78);
+      const v = voice(ch, 4, 57, 74);
       const path = [0, 1, 2, 3, 2, 1, 2, 3];
       for (let k = 0; k < beats * 2; k++) {
         const p = v[path[k % path.length]], t = t0 + at * TPB + k * 2 * S16;
@@ -181,9 +183,15 @@ export default function () {
     if (name.startsWith('Mukhda')) for (let k = 0; k < len / 8; k++) melody(fl, t0s + k * 8 * BAR, MUKHDA, 72 + k * 4, { h, lift: 0.3, legato: 30, grace: 80 });
     if (name.startsWith('Antara')) melody(fl, t0s, ANTARA, name === 'Antara' ? 68 : 72, { h, lift: 0.3, legato: 30, grace: 80 });
     if (name === 'Interlude') melody(sax, t0s, SAX, 74, { h, lift: 0.2, legato: 40 });
-    if (name === 'Mukhda2') melody(vn, t0s + 8 * BAR, COUNTER, 66, { h, lift: 0, legato: 40 });
+    if (name === 'Mukhda2') melody(vn, t0s + 8 * BAR, COUNTER, 66, { h, lift: 0, legato: 40, shift: -12 }); // an octave under the tune
     if (name === 'Outro') melody(fl, t0s, MUKHDA.slice(4).concat([[['B4', 4]], [[null, 4]], [[null, 4]], [[null, 4]]]), 60, { h, lift: 0.3, legato: 30 });
     bar += len;
+  }
+  // Breath before each return of the mukhda: the backing pulls back ~9 dB over the last half bar (the references dip 4-8 dB at
+  // section changes; Sandhya's level was flat from bar 9 to 80). Lead and dholak fill stay up.
+  for (const name of ['Mukhda1b', 'Antara2', 'Mukhda2']) {
+    const at = (sections[name][0] - 1) * BAR;
+    for (const g of [pno, va, vn, vc, dt, bass, kit]) g.automate('volume', [[at - BAR, 0], [at - BAR / 2, -9], [at - 20, -9], [at, 0]]);
   }
   return { session: s, endTicks: (bar + 3) * BAR, sections, ref: 'refs/tum-hi-ho.profile.json' };
 }

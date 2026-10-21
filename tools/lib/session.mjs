@@ -145,7 +145,8 @@ export class Session {
     for (const t of tracks.filter(t => !t.inst.synth)) {
       cmd('mix.sampler_load', {
         track: t.name, path: path.join(SAMPLES, t.zone.path).replace(/\\/g, '/'),
-        params: { root_note: t.zone.root, key_low: 0, key_high: 127, vel_low: 1, vel_high: 127, fine_tune: t.zone.fine_tune, decay: 10000, sustain: 100, ...t.inst.sampler, level: (t.inst.sampler?.level ?? 0) + (t.zone.level_trim ?? 0) },
+        // `start` (% of the file) skips the silence before the attack, measured by zones.py (Iowa, Philharmonia).
+        params: { root_note: t.zone.root, key_low: 0, key_high: 127, vel_low: 1, vel_high: 127, fine_tune: t.zone.fine_tune, decay: 10000, sustain: 100, ...t.inst.sampler, level: (t.inst.sampler?.level ?? 0) + (t.zone.level_trim ?? 0), ...(t.zone.start ? { start: t.zone.start } : {}) },
       });
       nextId++;
     }

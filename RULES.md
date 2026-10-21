@@ -43,6 +43,8 @@ SoundCraft CLI: `C:\Program Files\SoundCraft\soundcraft-cli.exe`. Update only fr
 | Reverb `damping` | A frequency, 1000–20000 Hz (plate default 10000). Small numbers clamp to 1 kHz and dull the tail. The plate also darkens on its own (~−5 dB at 4 kHz). |
 | Bounce | Ends where the last clip ends. Include ring-out in clip length / `endTicks`. |
 | VSCO naming | Strings, flute, clarinet, oboe are named an octave below sounding pitch. Harp and Salamander use standard names. `zones.py` applies the offset. |
+| File formats | WAV, FLAC, **AIFF** (Iowa) and **MP3** (Philharmonia) load directly (tested 2026-10-21). For MP3, `soundfile`'s `sf.info().duration` is an estimate (surdo 2.08 s, decoded 1.83 s): measure with the decoded length. |
+| Sample `start` | Percent of the file, fractional values work: `start: 16.25` cut a double bass's 277 ms lead-in to 13 ms. `zones.py` writes a per-zone `start` for Iowa and Philharmonia; `session.mjs` passes it on. |
 | `subtractive_synth` | `osc1_wave`/`osc2_wave`: **0 saw, 1 square, 2 sine, 3 triangle** (measured harmonics). Params: `osc2_semitones osc2_detune osc_mix cutoff resonance filter_env_amount filter_attack/decay/sustain/release amp_attack/decay/sustain/release glide level velocity` |
 | `drum_synth` | GM keys 36/38/42/46/45/50/49. Params: `kick_decay kick_tune snare_snappy snare_decay snare_tune hat_decay open_hat_decay tom_tune tom_decay cymbal_decay level` |
 | VSCO gaps | Horn samples skip C4–D5 and trombone shorts have 7-semitone gaps: give those instruments `maxShift: 7`. A velocity layer missing a note falls back to the nearest layer that has it (`session.mjs`). The clarinet's "F#5" files play F5 (`zones.py` corrects mislabels that land cleanly on a neighbouring semitone) |
@@ -129,6 +131,17 @@ What the three share and our pieces lack: tempo 89–96; the vocal moves **by st
 
 **Aesthetics scores (`tools/aesthetics.py`, 2026-10-21).** Audiobox Aesthetics, 1-10: Golden Hour CE 7.63 / PQ 7.95, Sandhya 7.52 / 8.13 (Intro CE 7.37 lowest, Mukhda 7.63), Tum Hi Ho 7.43 / 8.22. Deliberate damage on 60 s of Golden Hour: low-pass + crush -0.9 PQ / -0.5 CE; 8 kHz resample -0.4 PQ / -0.3 CE (while its octave bands read *brighter*, from distortion). Compressed scale: < 0.2 is noise. Not yet validated against the owner: log A/B choices with `tools/feedback.py` and check `report` before using it as a target.
 
+## 4e. Iowa MIS and Philharmonia (added 2026-10-21)
+
+Listening test: `pieces/sample-tour.mjs` (every new zone on the same phrase, sampler level 0; WAV/MP3 in R2 as `out/sample-tour.*`).
+
+- **Raw level at sampler level 0, velocity 90** (section RMS dBFS): flute (vib) −15.5, Thai gong −16.6, marimba yarn −17.4, viola −17.8, bass arco −19.6, pizz −20…−21, banjo −22.0, cello −22.2, violin −22.5, clarinet −22.8, plain flute −22.9, oboe −23.5, bassoon −23.6, soprano/alto sax −24…−25, flutes alto/bass −25, trumpet −26.9, cor anglais −27.1, bowed vibes −27.3, horn −28.0, trombone −33.4, **mandolin −34.2, mandolin tremolo −35.0, guitar −35.3**. The Philharmonia plucked strings need about +10 dB more than the rest: put it in the group `volume`, not `sampler.level` (clamp at +12).
+- **Timing:** both libraries have silence or noise before the attack (Philharmonia MP3 24-280 ms, Iowa 50-80 ms). `zones.py` measures it (`lead`): −30 dB below peak for bowed and blown swells, −12 dB for plucked and struck sounds (some Philharmonia files have up to 190 ms of −22 dB string or handling noise before the hit). Measured in a render: attacks land 0-6 ms after the note (plucked, pizz, kit), 4-18 ms (horn, sax, cor anglais).
+- **Iowa is solo, dry and nearly mono** (side/mid about −18 dB): pan it and give it the reverb send; one dynamic (ff) only, so shape loudness with `velocity` and automation. Philharmonia notes are mostly 0.25-1.5 s: use them for plucked parts, short phrases and percussion, not long sustains.
+- **Pitch:** Iowa labels are mostly right; zones.py root-corrects files that play a semitone or two off (bass E string drifts flat up high, so the bass prefers the G string), and confirms flagged notes with a harmonic-product-spectrum second opinion. Violin and cello pizzicato above about E5 is a click plus sympathetic ringing (−30 dB within 100 ms): avoid high pizz. Skipped bad take: guitar A#4 forte (plucked twice).
+- **Click detector** fires on Iowa trombone and tuba ff: their waveform edges are steep (step equals the local RMS, no discontinuity in the files). Not a defect.
+- **Indian stand-ins:** soprano sax and oboe (shehnai, nadaswaram), plain flute (`flute_plain`, no vibrato; bansuri lines), mandolin and mandolin tremolo (Carnatic mandolin, santoor-like tremolo), Chinese hand cymbals on `phil_perc` key 60 (manjira), surdo (dhol-like low end), Thai gong, bowed vibraphone (glassy drone pad).
+
 ## 5. Mix rules (measured targets)
 
 These are the numbers we mix toward. If a stem check fails, fix levels in the generator and re-render.
@@ -182,6 +195,7 @@ General information, not legal advice.
 
 - **SoundCraft** is MIT OR Apache-2.0. It claims nothing over what we render. Built-in plugins are original; we are not using them for this collection (sampler only).
 - **Salamander Grand Piano V3** (Alexander Holm): CC BY 3.0 — credit required. **VSCO 2 CE** (Versilian Studios / Sam Gossner, Simon Dalzell): CC0; they ask for credit and that we not sell the samples directly. Credit line is in `CREDITS.md`.
+- **University of Iowa MIS:** "may be downloaded and used for any projects, without restrictions". **Philharmonia Orchestra samples:** free in our own compositions, including commercial releases; they must not be sold or made available as samples or as a sampler instrument. Never share the library (or a `.scraft` with its `Audio Files/`) outside the private R2 bucket.
 - **United States:** copyright needs human authorship. Prompts and approval alone are probably not enough. Human melody, rhythm, or creative arrangement that is perceptible in the output can be protected; AI-only material must be disclaimed on a US registration.
 - **India:** Copyright Act s. 2(d)(vi) names the author of a computer-generated work as "the person who causes the work to be created". Untested for generative AI.
 - **To own a track:** the owner supplies a core idea (hummed, played, or written into the generator), makes real creative choices in iteration, and those contributions are committed under their name with an origin entry.
@@ -192,5 +206,5 @@ General information, not legal advice.
 | --- | --- |
 | `pieces/`, `tools/`, `RULES.md`, `music.md`, `CREDITS.md`, `README.md` | `.env` |
 | `samples/zones.json` and sample *licences / readmes* | Sample audio (`salamander/Samples/`, VSCO `.wav`) |
-| `tools/assets.mjs` (R2 holds `samples/salamander`, `samples/vsco2`, `samples/vcsl` and `out/*.wav`/`*.mp3`) | Anything in `out/` (renders go to R2; `.scraft` and `Audio Files/` stay local) |
+| `tools/assets.mjs` (R2 holds `samples/salamander`, `samples/vsco2`, `samples/vcsl`, `samples/iowa`, `samples/philharmonia` and `out/*.wav`/`*.mp3`) | Anything in `out/` (renders go to R2; `.scraft` and `Audio Files/` stay local) |
 | `.cursor/rules/` | `work/` (scripts, stems, TTS, vocals) |

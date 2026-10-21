@@ -16,6 +16,7 @@ import numpy as np, soundfile as sf
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'samples')
 PC = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
+ACC = {'': 0, '#': 1, 's': 1, 'b': -1}  # sharps are '#' (VSCO, VCSL) or 's' (Philharmonia: As3); Iowa names flats (Bb3)
 
 # name: (glob, regex with groups note/acc/oct/layer, octave offset, {layer: (vel_low, vel_high)}, measure-at seconds).
 # Measure-at None = don't measure: the piano keeps Salamander's own 'retuned' offsets (Data/tune_ret.txt; a real
@@ -41,7 +42,13 @@ INSTRUMENTS = {
 #   octave 'auto' = measure every file and use the most common octave offset between name and sound;
 #   velocity ranges are split evenly between the layers found, quietest first;
 #   files differing only in `r` are round robins (alternated by session.mjs on repeated notes);
-#   tune / trim: apply measured fine-tune and level evening (sustained sounds only).
+#   tune / trim: apply measured fine-tune and level evening (sustained sounds only);
+#   lead: measure the silence before each attack and skip it with the sampler's `start` (Philharmonia MP3s carry
+#     24-280 ms of encoder padding and room tone, Iowa 50-80 ms), so notes land on the beat; True = attack starts
+#     30 dB below the peak (bowed and blown swells), a number = that threshold (-12 for plucked and struck);
+#   prefer: when several files play the same note and layer (Iowa strings record each note on every string),
+#     keep the first whose name contains an entry of this list;
+#   skip: file names left out (bad takes found by measurement).
 V = r'_(?P<n>[A-G])(?P<a>#?)(?P<o>\d)_v(?P<l>\d)'
 AUTO = {
     'violins_spic': dict(glob='vsco2/Strings/Violin Section/Spic/*.wav', rx=V + r'_rr(?P<r>\d)\.wav$', t0=0.05),
@@ -82,7 +89,55 @@ AUTO.update({
     'upright': dict(glob=VC + 'Chordophones/Zithers/Upright Piano, Yamaha/Sustains/*.wav', rx=r'_Sus_' + NOTE + r'_vl(?P<l>\d)_rr(?P<r>\d)\.wav$', t0=0.1, tune=True),
     'kalimba': dict(glob=VC + 'Idiophones/Plucked Idiophones/Kalimba, Kenya/*.wav', rx=r'_MainSpirit_' + NOTE + r'_k\d+_vl(?P<l>\d)_rr(?P<r>\d)\.wav$', t0=0.05, tune=True),
 })
-LAYER_ORDER = ['ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff', 'loud']
+# Philharmonia Orchestra samples (MP3, solo players; free in our own music, never to be passed on as samples).
+# Most notes are 0.25-1.5 s, so they suit plucked strings and short solo phrases rather than long sustains.
+PH, PN = 'philharmonia/', r'_(?P<n>[A-G])(?P<a>s?)(?P<o>\d)_'
+AUTO.update({
+    'mandolin': dict(glob=PH + 'mandolin/*.mp3', rx=PN + r'very-long_(?P<l>piano)_normal\.mp3$', t0=0.05, tune=True, lead=-12),
+    'mandolin_trem': dict(glob=PH + 'mandolin/*.mp3', rx=PN + r'very-long_(?P<l>piano|forte)_tremolo\.mp3$', t0=0.3, tune=True, trim=True, lead=True),
+    'guitar': dict(glob=PH + 'guitar/*.mp3', rx=PN + r'very-long_(?P<l>piano|forte)_normal\.mp3$', t0=0.05, tune=True, lead=-12,
+                   skip=['guitar_As4_very-long_forte_normal.mp3']),  # plucked twice, the second louder at 1.75 s
+    'banjo': dict(glob=PH + 'banjo/*.mp3', rx=PN + r'very-long_(?P<l>piano|forte)_normal\.mp3$', t0=0.05, tune=True, lead=-12),
+    'cor_anglais': dict(glob=PH + 'cor anglais/*.mp3', rx=PN + r'15_(?P<l>piano|mezzo-forte|forte)_normal\.mp3$', t0=0.3, tune=True, trim=True, lead=True),
+})
+# University of Iowa MIS, post-2012 set (AIFF, one note per file, chromatic, ff only; no restrictions on use).
+# Solo players with long, full notes: the chromatic coverage fills gaps where VSCO stretches samples (horn C4-D5).
+# Strings record each note on every string; `prefer` keeps the highest string, as a player in low position would.
+IO, IN = 'iowa/', r'\.(?P<n>[A-G])(?P<a>b?)(?P<o>\d)\.stereo\.aif$'
+SUL = ['sulE', 'sulA', 'sulD', 'sulG', 'sulC']          # violin E A D G, viola and cello A D G C
+BASS_SUL = ['sulG', 'sulD', 'sulA', 'sulE', 'sulC']     # bass strings run the other way; its E string plays flat up high (measured)
+# Pizzicato high on the top string is barely pitched (detector and harmonic check both fail): middle strings first.
+PIZZ = {'violin': ['sulA', 'sulD', 'sulG', 'sulE'], 'cello': ['sulD', 'sulG', 'sulA', 'sulC'], 'bass': ['sulD', 'sulA', 'sulG', 'sulE', 'sulC']}
+AUTO.update({
+    'horns_iowa': dict(glob=IO + 'Brass/Horn/*.aif', rx=r'^Horn\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'trumpet_iowa': dict(glob=IO + 'Brass/BbTrumpet/*.aif', rx=r'^Trumpet\.vib\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'trombone_iowa': dict(glob=IO + 'Brass/Tenor Trombone/*.aif', rx=r'^TenorTrombone\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'tuba_iowa': dict(glob=IO + 'Brass/Tuba/*.aif', rx=r'^Tuba\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'alto_flute': dict(glob=IO + 'Woodwinds/Alto Flute/*.aif', rx=r'^AltoFlute\.vib\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'bass_flute': dict(glob=IO + 'Woodwinds/Bass Flute/*.aif', rx=r'^BassFlute\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'bassoon': dict(glob=IO + 'Woodwinds/Bassoon/*.aif', rx=r'^Bassoon\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'bass_clarinet': dict(glob=IO + 'Woodwinds/Bass Clarinet/*.aif', rx=r'^BassClarinet\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'flute_iowa': dict(glob=IO + 'Woodwinds/Flute/*.aif', rx=r'^Flute\.vib\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'flute_plain': dict(glob=IO + 'Woodwinds/Flute/*.aif', rx=r'^Flute\.nonvib\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),  # bansuri-style lines
+    'oboe_iowa': dict(glob=IO + 'Woodwinds/Oboe/*.aif', rx=r'^Oboe\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'clarinet_iowa': dict(glob=IO + 'Woodwinds/Bb Clarinet/*.aif', rx=r'^BbClarinet\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'soprano_sax': dict(glob=IO + 'Woodwinds/Bb Soprano Saxophone/*.aif', rx=r'^SopSax\.vib\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),  # shehnai / nadaswaram stand-in
+    'alto_sax': dict(glob=IO + 'Woodwinds/Eb Alto Saxophone/*.aif', rx=r'^AltoSax\.vib\.(?P<l>ff)' + IN, t0=0.5, tune=True, trim=True, lead=True),
+    'violin_solo': dict(glob=IO + 'Strings/Violin/*.aif', rx=r'^Violin\.arco\.(?P<l>ff)\.sul[A-G]' + IN, t0=0.5, tune=True, trim=True, lead=True, prefer=SUL),
+    'violin_solo_pizz': dict(glob=IO + 'Strings/Violin/*.aif', rx=r'^Violin\.pizz\.(?P<l>ff)\.sul[A-G]' + IN, t0=0.05, tune=True, lead=-12, prefer=PIZZ['violin']),
+    'viola_solo': dict(glob=IO + 'Strings/Viola/*.aif', rx=r'^Viola\.arco\.(?P<l>ff)\.sul[A-G]' + IN, t0=0.5, tune=True, trim=True, lead=True, prefer=SUL),
+    'cello_solo': dict(glob=IO + 'Strings/Cello/*.aif', rx=r'^Cello\.arco\.(?P<l>ff)\.sul[A-G]' + IN, t0=0.5, tune=True, trim=True, lead=True, prefer=SUL),
+    'cello_solo_pizz': dict(glob=IO + 'Strings/Cello/*.aif', rx=r'^Cello\.pizz\.(?P<l>ff)\.sul[A-G]' + IN, t0=0.05, tune=True, lead=-12, prefer=PIZZ['cello']),
+    'bass_arco': dict(glob=IO + 'Strings/Double Bass/*.aif', rx=r'^Bass\.arco\.(?P<l>ff)\.sul[A-G]' + IN, t0=0.5, tune=True, trim=True, lead=True, prefer=BASS_SUL),
+    'bass_pizz': dict(glob=IO + 'Strings/Double Bass/*.aif', rx=r'^Bass\.pizz\.(?P<l>ff)\.sul[A-G]' + IN, t0=0.05, tune=True, lead=-12, prefer=PIZZ['bass']),
+    'vibes_bow': dict(glob=IO + 'Percussion/Vibraphone/*.aif', rx=r'^Vibraphone\.(?P<l>bow)' + IN, t0=0.5, tune=True, trim=True, lead=True),  # bowed: a glassy pad
+    'marimba_yarn': dict(glob=IO + 'Percussion/Marimba/*.aif', rx=r'^Marimba\.yarn\.(?P<l>ff)' + IN, t0=0.03, tune=True, lead=-12),
+    'marimba_roll': dict(glob=IO + 'Percussion/Marimba/*.aif', rx=r'^Marimba\.roll\.(?P<l>ff)' + IN, t0=0.3, tune=True, trim=True, lead=True),
+    'crotales': dict(glob=IO + 'Percussion/Crotales/*.aif', rx=r'^Crotale\.(?P<l>ff)' + IN, t0=0.05, lead=-12),
+    'thai_gong': dict(glob=IO + 'Percussion/Thai Gongs/*.aif', rx=r'^thaigong\.(?P<l>ff)' + IN, t0=0.1, lead=-12, octave=0),  # inharmonic: trust the names
+})
+LAYER_ORDER = ['ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff', 'loud',
+               'pianissimo', 'piano', 'mezzo-piano', 'mezzo-forte', 'forte', 'fortissimo']  # Philharmonia spells them out
 
 # Percussion kit: MIDI key -> (glob, regex with optional layer `l` and round robin `r`).
 P = 'vsco2/Percussion/'
@@ -131,16 +186,26 @@ def build_auto(name, spec, flagged):
     files = []
     for path in sorted(glob.glob(os.path.join(ROOT, spec['glob']))):
         m = re.search(spec['rx'], os.path.basename(path))
-        if m:
-            named = 12 * (int(m['o']) + 1) + PC[m['n']] + (1 if m['a'] else 0)
+        if m and os.path.basename(path) not in spec.get('skip', ()):
+            named = 12 * (int(m['o']) + 1) + PC[m['n']] + ACC[m['a'] or '']
             x, sr = sf.read(path)
             files.append((path, m, named, x, sr))
+    if not files:
+        raise FileNotFoundError(f'{name}: no files match {spec["glob"]} (pull the folder from R2 first)')
+    if spec.get('prefer'):
+        rank = lambda p: next((i for i, s in enumerate(spec['prefer']) if s in os.path.basename(p)), len(spec['prefer']))
+        best = {}
+        for f in sorted(files, key=lambda f: rank(f[0])):
+            best.setdefault((f[2], f[1]['l'], f[1].groupdict().get('r')), f)
+        files = sorted(best.values(), key=lambda f: f[0])
+    db = -30 if spec.get('lead') is True else spec.get('lead')
+    lead = {path: onset(x, sr, db) if db else 0.0 for path, m, named, x, sr in files}
     measured = {}
     if spec.get('octave') is None:
         offs = []
         for path, m, named, x, sr in files:
             try:
-                v = 69 + 12 * np.log2(f0(x, sr, spec['t0'], 0.25) / 440)
+                v = 69 + 12 * np.log2(f0(x, sr, spec['t0'] + lead[path], 0.25) / 440)
                 if np.isfinite(v):
                     measured[path] = v
                     offs.append(round((v - named) / 12) * 12)
@@ -154,20 +219,30 @@ def build_auto(name, spec, flagged):
     for path, m, named, x, sr in files:
         root = named + octave
         cents = 0.0
-        if spec.get('tune') and path in measured:
-            cents = (measured[path] - root) * 100
-            near = round(measured[path])
-            if abs(cents) > 50 and abs(measured[path] - near) < 0.3 and abs(near - root) <= 2:
+        v = measured.get(path)
+        if spec.get('lead') and (v is None or abs(v - root) > 0.5):
+            # Second opinion for the Iowa / Philharmonia sets: autocorrelation locks onto noise under fast-decaying
+            # pizzicato and onto the 2nd harmonic of reeds; the harmonic product spectrum doesn't (checked by hand).
+            h = f0_hps(x, sr, spec['t0'] + lead[path])
+            if abs(h - root) <= 2.3 and (v is None or abs(h - root) < abs(v - root)):
+                v = h
+        if spec.get('tune') and v is not None:
+            cents = (v - root) * 100
+            near = round(v)
+            if abs(cents) > 50 and abs(v - near) < 0.3 and abs(near - root) <= 2:
                 flagged.append(f'{name} {os.path.basename(path)}: named {root}, plays {near}; root corrected')
-                root, cents = near, (measured[path] - near) * 100   # mislabelled file
+                root, cents = near, (v - near) * 100   # mislabelled file
             if abs(cents) > 50:
-                flagged.append(f'{name} {os.path.basename(path)}: named {root}, measured {measured[path]:.2f}')
+                flagged.append(f'{name} {os.path.basename(path)}: named {root}, measured {v:.2f}')
                 cents = 0.0
         lo, hi = vr[m['l']]
         mono = x.mean(1) if x.ndim > 1 else x
+        s = int(lead[path] * sr)
         z = {'path': os.path.relpath(path, ROOT).replace('\\', '/'), 'root': root, 'layer': m['l'], 'vel_low': lo, 'vel_high': hi,
-             'fine_tune': round(-cents, 1), 'seconds': round(len(x) / sr, 2),
-             'rms_db': float(20 * np.log10(np.sqrt(np.mean(mono[int(0.4 * sr):int(2 * sr)] ** 2)) + 1e-9))}
+             'fine_tune': round(-cents, 1), 'seconds': round((len(x) - s) / sr, 2),
+             'rms_db': float(20 * np.log10(np.sqrt(np.mean(mono[s + int(0.4 * sr):s + int(2 * sr)] ** 2)) + 1e-9))}
+        if spec.get('lead'):
+            z['start'] = round(100 * s / len(x), 3)  # sampler `start` is a percentage of the file
         if 'r' in m.groupdict() and m['r']:
             z['rr'] = int(m['r'])
         out.append(z)
@@ -197,7 +272,37 @@ HAND = {
 }
 
 
-def build_kit(kit=KIT):
+# Philharmonia percussion (single hits; MP3 padding skipped with `start`). Hand cymbals stand in for manjira.
+Q, D = PH + 'percussion/', r'__\d+_(?P<l>[a-z-]+)_'
+PHIL_KIT = {
+    60: (Q + 'Chinese hand cymbals/*_struck-together.mp3', D + 'struck'),   # hand cymbals (manjira / jhanj)
+    61: (Q + 'djembe/djembe__05_*_undamped.mp3', D + 'undamped'),           # djembe, open
+    62: (Q + 'surdo/surdo__05_*_undamped.mp3', D + 'undamped'),             # surdo, open (deep, dhol-like low end)
+    63: (Q + 'surdo/surdo__05_*_damped.mp3', D + 'damped'),                 # surdo, damped
+    64: (Q + 'djundjun/djundjun__05_*_struck-singly.mp3', D + 'struck'),     # djundjun
+    65: (Q + 'tom-toms/tom-toms__05_*_struck-singly.mp3', D + 'struck'),     # tom
+    66: (Q + 'agogo bells/agogo-bells__025_*.mp3', D + 'struck'),            # agogo
+    67: (Q + 'castanets/castanets__025_*.mp3', D + 'struck'),                # castanets
+    68: (Q + 'cowbell/cowbell__1_*_undamped.mp3', D + 'undamped'),          # cowbell, open
+    69: (Q + 'guiro/guiro__05_*_scraped.mp3', D + 'scraped'),               # guiro scrape
+    70: (Q + 'cabasa/cabasa__025_*.mp3', D + 'effect'),                      # cabasa
+    71: (Q + 'woodblock/woodblock__025_*.mp3', D + 'struck'),                # woodblock
+    72: (Q + 'tambourine/tambourine__025_*_hand.mp3', D + 'hand'),           # tambourine hit
+    73: (Q + 'sleigh bells/sleigh-bells__05_*.mp3', D + 'shaken'),           # sleigh bells
+    74: (Q + 'triangle/triangle__long_piano_struck-singly.mp3', r'_(?P<l>piano)_'),  # triangle
+    75: (Q + 'bell tree/bell-tree__long_*_glissando.mp3', r'_(?P<l>mezzo-forte|forte)_'),  # bell tree sweep
+    76: (Q + 'wind chimes/*.mp3', r'_(?P<l>mezzo-piano)_'),                   # wind chimes
+    77: (Q + 'Thai gong/Thai-gong__long_*_undamped.mp3', r'_(?P<l>forte|fortissimo)_'),  # Thai gong
+    78: (Q + 'tam-tam/tam-tam__long_mezzo-piano_undamped.mp3', r'_(?P<l>mezzo-piano)_'),  # tam-tam
+    79: (Q + 'snare drum/snare-drum__025_*_with-snares.mp3', D + 'with'),    # orchestral snare
+    80: (Q + 'bass drum/bass-drum__025_*_bass-drum-mallet.mp3', D + 'bass'), # concert bass drum
+    81: (Q + 'clash cymbals/clash-cymbals__15_fortissimo_struck-together.mp3', D + 'struck'),  # clash cymbals
+    82: (Q + 'suspended cymbal/suspended-cymbal__very-long_cresc-decresc_roll.mp3', r'_(?P<l>cresc-decresc)_'),  # cymbal swell
+    83: (Q + 'whip/whip__025_*.mp3', D + 'struck'),                          # whip (slapstick)
+}
+
+
+def build_kit(kit=KIT, lead=None):
     out = []
     for key, (pattern, rx) in kit.items():
         files = [(p, re.search(rx, os.path.basename(p))) for p in sorted(glob.glob(os.path.join(ROOT, pattern)))]
@@ -213,10 +318,38 @@ def build_kit(kit=KIT):
             info = sf.info(p)
             z = {'path': os.path.relpath(p, ROOT).replace('\\', '/'), 'root': key, 'layer': m['l'], 'vel_low': vr[m['l']][0],
                  'vel_high': vr[m['l']][1], 'fine_tune': 0, 'seconds': round(info.duration, 2), 'exact': True, 'level_trim': trim}
+            if lead:  # (for MP3s sf.info's duration is an estimate, up to 14 % long: use the decoded length)
+                x, sr = sf.read(p)
+                t, dur = onset(x, sr, lead), len(x) / sr
+                z['seconds'], z['start'] = round(dur - t, 2), round(100 * t / dur, 3)
             if 'r' in m.groupdict() and m['r']:
                 z['rr'] = int(m['r'])
             out.append(z)
     return out
+
+
+def onset(x, sr, db=-30):
+    """Seconds before the attack reaches `db` below the file's peak, less 3 ms so the attack itself is kept.
+    Plucked and struck sounds use -12: some Philharmonia files carry up to 190 ms of string or handling noise at
+    -22 dB before the hit (mandolin C5, surdo), and their attacks rise past -12 dB within a few ms anyway."""
+    a = np.abs(x.mean(1) if x.ndim > 1 else x)
+    return max(0.0, int(np.argmax(a > 10 ** (db / 20) * a.max())) / sr - 0.003)
+
+
+def f0_hps(x, sr, t0, dur=0.3):
+    """Fundamental (MIDI) by harmonic product spectrum: the frequency whose 2nd-4th harmonics line up best."""
+    if x.ndim > 1:
+        x = x.mean(1)
+    seg = x[int(t0 * sr):int((t0 + dur) * sr)]
+    if len(seg) < sr // 20:
+        return float('nan')
+    spec = np.abs(np.fft.rfft(seg * np.hanning(len(seg)), 1 << 19))
+    freq = np.fft.rfftfreq(1 << 19, 1 / sr)
+    h = spec.copy()
+    for k in (2, 3, 4):
+        h[:len(spec) // k] *= spec[::k][:len(spec) // k]
+    lo, hi = np.searchsorted(freq, [25, 4500])
+    return 69 + 12 * np.log2(freq[lo + int(np.argmax(h[lo:hi]))] / 440)
 
 
 def f0(x, sr, t0, dur=0.5):
@@ -289,9 +422,9 @@ def main():
         zones[inst] = out
         print(f'{inst}: {len(out)} zones, roots {min(z["root"] for z in out)}-{max(z["root"] for z in out)}, octave offset {octave:+d}, '
               f'layers {sorted({z["layer"] for z in out}, key=layer_key)}' + (', round robins' if any('rr' in z for z in out) else ''))
-    for name, kit in (('perc', KIT), ('hand', HAND)):
+    for name, kit, lead in (('perc', KIT, None), ('hand', HAND, None), ('phil_perc', PHIL_KIT, -12)):
         if want(name):
-            zones[name] = build_kit(kit)
+            zones[name] = build_kit(kit, lead)
             print(f'{name}: {len(zones[name])} zones on keys {sorted({z["root"] for z in zones[name]})}')
     with open(path_out, 'w') as f:
         json.dump(zones, f, indent=1)

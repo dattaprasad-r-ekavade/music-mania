@@ -21,7 +21,7 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 const rel = p => path.relative(ROOT, path.resolve(p)).split(path.sep).join('/');
 const md5 = b => createHash('md5').update(b).digest('hex');
 const mb = n => `${(n / 1e6).toFixed(1)} MB`;
-const TYPES = { wav: 'audio/wav', mp3: 'audio/mpeg', flac: 'audio/flac', json: 'application/json', txt: 'text/plain', sfz: 'text/plain' };
+const TYPES = { wav: 'audio/wav', mp3: 'audio/mpeg', flac: 'audio/flac', aif: 'audio/aiff', json: 'application/json', txt: 'text/plain', sfz: 'text/plain' };
 const typeOf = key => TYPES[key.split('.').pop().toLowerCase()] ?? 'application/octet-stream';
 
 // Run fn over items with a few requests in flight; retries each item twice.

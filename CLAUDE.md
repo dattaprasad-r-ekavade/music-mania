@@ -1,26 +1,44 @@
 # Music Mania: agent handoff
 
-Read this first, then [RULES.md](RULES.md) (measured facts and rules; it wins over memory) and [README.md](README.md) (layout and pieces). Last updated 2026-10-16.
+Read this first, then [RULES.md](RULES.md) (measured facts and rules; it wins over memory) and [README.md](README.md) (layout and pieces). Last updated 2026-10-21.
 
 ## What this repo is
 
-Original instrumental music written as JavaScript generators (`pieces/*.mjs`), rendered headless through SoundCraft 0.7.0 with sampled libraries (Salamander piano, VSCO 2 CE, VCSL) and built-in synths, then checked by measurement because the agent cannot hear. The owner listens and gives review notes; fixes go back into the generator and become rules in RULES.md §6.
+Original instrumental music written as JavaScript generators (`pieces/*.mjs`), rendered headless through SoundCraft 0.7.0 with sampled libraries (Salamander piano, VSCO 2 CE, VCSL, Iowa MIS, Philharmonia) and built-in synths, then checked by measurement because the agent cannot hear. The owner listens and gives review notes; fixes go back into the generator and become rules in RULES.md §6.
 
-## Environment (this Windows machine)
+## Machines (two Windows machines, synced through GitHub and R2)
 
-| Thing | Fact |
+The owner works on both. **Run `hostname` at the start of a session** and use that machine's row; the facts differ.
+
+| | **Laptop** (`hostname` = `Dattaprasad`, user `ekava`) | **Desktop** (user `admin`) |
+| --- | --- | --- |
+| Hardware | 20 threads, **NVIDIA RTX 4060 Laptop, 8 GB** | 4-core i5, CPU only |
+| Disk | Repo on **D:** (~150 GB free); C: ~59 GB free | **C: nearly full (1-5 GB free)**: keep samples pruned (`node tools/assets.mjs prune`) |
+| Python | 3.11.9, `C:\Users\ekava\AppData\Local\Programs\Python\Python311\python.exe` (a real exe) | 3.12 through a pyenv-win **`.bat` shim**: Node can't spawn it (render.mjs resolves the real exe) and `%` in arguments breaks it: use `C:\Users\admin\.pyenv\pyenv-win\versions\3.12.7\python.exe` for such commands (e.g. yt-dlp `-o "%(ext)s"`) |
+| Analysis stack | Core only so far (no torch / Demucs yet; install a CUDA build of torch here when GPU work is next) | `requirements-analysis.txt` installed (CPU) |
+| Samples on disk | Full libraries (disk is plentiful) | Only what pieces need, pulled from R2 |
+
+**Divide the work by machine:** GPU and disk-heavy jobs (separation, embeddings, aesthetics, Basic Pitch, fetching and zoning whole libraries) on the laptop; composing, rendering and reviews on either. Neither machine has anything the other can't get from git (code, docs, `zones.json`, profiles) or R2 (audio).
+
+**Sync rules:**
+1. Start: `git pull --rebase`. End: commit and push (the owner switches machines between sessions), and push new audio to R2 (`node tools/assets.mjs push …`).
+2. `samples/zones.json` is generated: on a merge conflict, take either side and rebuild with `python -I tools/zones.py --only <instruments>` rather than hand-merging.
+3. `feedback/*.jsonl` is append-only and merges as a union (`.gitattributes`), so A/B logs from both machines combine.
+4. A library added on one machine reaches the other through R2 only after `assets.mjs push samples/<lib>/`; `render.mjs` then pulls the files a piece needs.
+
+| Thing (both machines) | Fact |
 | --- | --- |
 | SoundCraft | `C:\Program Files\SoundCraft\soundcraft-cli.exe` 0.7.0. Ticks per beat 960. `soundcraft-cli mcp` also works (not registered as an MCP server) |
-| Python | 3.12 through a pyenv-win **`.bat` shim**: Node can't spawn it directly (render.mjs resolves the real exe), and `%` in arguments breaks it: use `C:\Users\admin\.pyenv\pyenv-win\versions\3.12.7\python.exe` for such commands (e.g. yt-dlp `-o "%(ext)s"`). Run scripts with `python -I` (then the script folder is not on `sys.path`; tools insert it themselves) |
-| Packages | `requirements.txt` (core) and `requirements-analysis.txt` (reference learning; `pip install --no-deps basic-pitch` separately: its deps pin numpy<1.24). Do not upgrade/downgrade torch, numpy, librosa, onnxruntime: several tools share this env |
-| Disk | **C: is nearly full (1-5 GB free).** Samples are a cache: `node tools/assets.mjs prune`. `work/` stems and `out/Audio Files/` are regenerable. Check `df -h /` before downloads or model installs |
-| Secrets | `.env` (gitignored): `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` (bucket `music-repo`), ElevenLabs keys (singing is parked by the owner) |
+| Python | Run scripts with `python -I` (then the script folder is not on `sys.path`; tools insert it themselves) |
+| Packages | `requirements.txt` (core) and `requirements-analysis.txt` (reference learning; `pip install --no-deps basic-pitch` separately: its deps pin numpy<1.24). Do not upgrade/downgrade torch, numpy, librosa, onnxruntime: several tools share one env |
+| Disk | Samples are a cache: `node tools/assets.mjs prune`. `work/` stems and `out/Audio Files/` are regenerable. Check `df -h` before downloads or model installs |
+| Secrets | `.env` (gitignored, kept on each machine): `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` (bucket `music-repo`), ElevenLabs keys (singing is parked by the owner) |
 | Line endings | Repo files are CRLF; editing with Node scripts: normalise `\r\n` before matching. Node template literals inside bash heredocs lose backslashes: edit regex-heavy files with the Edit tool |
 
 ## Storage (Cloudflare R2, private)
 
 `tools/assets.mjs` + `tools/lib/r2.mjs` (no dependencies). Keys mirror repo paths.
-- `samples/salamander/`, `samples/vsco2/`, `samples/vcsl/`: full libraries. `render.mjs` downloads only the files a piece uses into `samples/`.
+- `samples/salamander/`, `samples/vsco2/`, `samples/vcsl/`, `samples/iowa/`, `samples/philharmonia/`: full libraries (the last two fetched from source with `tools/fetch_samples.py`). `render.mjs` downloads only the files a piece uses into `samples/`.
 - `out/<name>.wav|.mp3`: released renders (not in git since 2026-10-16; history was rewritten to drop them).
 - `refs/`: reference songs (YouTube audio of Hindi film songs, for analysis only), their stems, MIDI and embedding caches. Never in git, never redistributed.
 - Commands: `status`, `push PATH…`, `pull PREFIX`, `need piece.mjs`, `prune`, `mirror OWNER/REPO PREFIX`.
@@ -55,14 +73,16 @@ For a revision the owner will judge: `python -I tools/feedback.py snapshot <name
 | `video/make.mjs`, `video/src/` | YouTube videos: Remotion pixel-art loop per piece, ffmpeg to full length with audio, thumbnail, upload text, R2 (README "Videos") |
 | `tools/aesthetics.py`, `render.mjs --aes` | Audiobox Aesthetics scores (CE/CU/PC/PQ), whole and per section |
 | `tools/feedback.py` | Owner A/B log: `snapshot` → change + render → `pair` → owner listens → `log <name> A|B|same "note"`; `report` = which metrics predict the owner |
-| `tools/zones.py` | Builds `samples/zones.json`; `--only a,b` rebuilds just those (pull their folders from R2 first) |
+| `tools/zones.py` | Builds `samples/zones.json`; `--only a,b` rebuilds just those (pull their folders from R2 first). Measures pitch, level and, for Iowa / Philharmonia, the silence before each attack (`start`) |
+| `tools/fetch_samples.py` | Downloads Iowa MIS / Philharmonia from their publishers (once, on the laptop), before `assets.mjs push` |
 
-## State of the work (2026-10-16)
+## State of the work (2026-10-21)
 
 - Pieces: golden-hour (owner 10/10), mass-entry, spring-dream, pahadi-winter, city-lights, neon-bhairav (awaiting review), sandhya (review 1 applied: warmer intro, percussion low end, flute levels).
 - **Sandhya**: review 2 (mix and arrangement) chosen by the owner in the first A/B (RULES 4d). Still open: melody too on-beat and even (RULES 4d critique; ask before changing it, the owner likes the flute line); breaths before the mukhda are inaudible (make them an arrangement drop, not just a fader dip); low-mids still thinner than the references.
 - **Preference log**: `feedback/feedback.jsonl` has 1 owner choice. Use `tools/feedback.py snapshot/pair/log` on every revision the owner judges; `report` after 20+ choices.
-- **Samples to add next** (docs/research-roadmap.md §3): Iowa MIS, Philharmonia, Freesound CC0 Indian kit, CC0 ambience for videos. Avoid Splice loops (Content ID).
+- **Samples added 2026-10-21:** Iowa MIS (26 zones: solo strings and pizz, horn/trumpet/trombone/tuba, flutes incl. alto, bass and non-vibrato, oboe, clarinets, bassoon, soprano/alto sax, bowed vibes, marimba, crotales, Thai gong) and Philharmonia (mandolin, guitar, banjo, cor anglais, `phil_perc` kit). Facts in RULES §4e; listening test `pieces/sample-tour.mjs` (owner has not heard it yet). No piece uses them yet.
+- **Samples still to add** (docs/research-roadmap.md §3): Freesound CC0 Indian kit (tabla strokes, tanpura), CC0 ambience for videos. Avoid Splice loops (Content ID).
 - Embeddings: Sandhya is the closest of our pieces to the Hindi references but outside their cluster (RULES 4d); Intro and Outro drift most.
 - Copying guard: match every voice of the Demucs "other" MIDI, not just its skyline (RULES 4d; Demucs catches 76 % of the City Lights trumpet). RoFormer separation does not work here: keep Demucs.
 - **Sampler clamp warning fires in six older pieces** (all but golden-hour): fix each when it is next revised (lower `sampler.level`, raise group `volume`).

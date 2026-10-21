@@ -58,10 +58,10 @@ Indian instruments remain the gap; Freesound CC0 is the best free route.
 
 ## 4. Suggested order
 
-0. Sample additions: Iowa MIS and Philharmonia via `zones.py` → R2; Freesound CC0 tabla strokes and tanpura drone; OpenGameArt / Freesound ambience for videos.
+0. Sample additions: ~~Iowa MIS and Philharmonia via `zones.py` → R2~~ (done 2026-10-21, RULES §4e); Freesound CC0 tabla strokes and tanpura drone; OpenGameArt / Freesound ambience for videos.
 1. sfizz pilot: VSCO flute SFZ with pitch-bend meend vs the current flute (`embed.py`, `visualize.py`, then a listen).
 2. OpenAIR concert-hall convolution on Golden Hour through Pedalboard vs the plate.
-3. Iowa MIS solo instruments into `zones.py`.
+3. ~~Iowa MIS solo instruments into `zones.py`~~ (done with step 0). Next: use them in a piece (solo cello or soprano sax lead) and judge by A/B.
 4. Freesound CC0 Indian percussion and drone kit (needs an API key).
 5. Surge XT through DawDreamer for the synth pieces.
 6. Focus profile and a deep-work variant of one existing piece.

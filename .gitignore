@@ -28,6 +28,8 @@ refs/*.npz
 samples/salamander/
 samples/vsco2/
 samples/vcsl/
+samples/iowa/
+samples/philharmonia/
 
 # OS / editor
 Thumbs.db

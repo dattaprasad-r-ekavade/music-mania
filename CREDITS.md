@@ -14,9 +14,19 @@ Source: https://github.com/sgossner/VSCO-2-CE
 Licence: CC0 1.0 (public domain). Credit requested in the same way as VSCO 2 CE.
 Source: https://github.com/sgossner/VCSL
 
+**University of Iowa Musical Instrument Samples (MIS)**, Electronic Music Studios, University of Iowa (Lawrence Fritts), post-2012 note set.
+Licence: "may be downloaded and used for any projects, without restrictions." No credit required; we credit anyway.
+Source: https://theremin.music.uiowa.edu/MIS.html (fetched with `tools/fetch_samples.py iowa`)
+
+**Philharmonia Orchestra sound samples** by the Philharmonia Orchestra and its players.
+Licence: free to use in your own compositions, including commercial releases; the samples must not be sold, or made available as samples or as a sampler instrument. We keep them in the private R2 bucket only.
+Source: https://philharmonia.co.uk/audio-sound-samples/ (fetched with `tools/fetch_samples.py philharmonia`)
+
 Credit line for releases (YouTube descriptions, album notes, licence documents):
 
-> Piano: Salamander Grand Piano by Alexander Holm (CC BY 3.0). Orchestral samples: VSCO 2 Community Edition by Versilian Studios and Simon Dalzell. Additional samples: Versilian Community Sample Library (VCSL) by Versilian Studios.
+> Piano: Salamander Grand Piano by Alexander Holm (CC BY 3.0). Orchestral samples: VSCO 2 Community Edition by Versilian Studios and Simon Dalzell. Additional samples: Versilian Community Sample Library (VCSL) by Versilian Studios; University of Iowa Musical Instrument Samples; Philharmonia Orchestra sound samples.
+
+(Name only the libraries a release actually uses.)
 
 ## Video tools
 
@@ -87,7 +97,9 @@ neon-bhairav.wav  (cyberpunk with Indian fusion (raga Bhairav))
   Human input: theme brief by the owner; no human melodic or arrangement contribution yet
   Tools: SoundCraft 0.7.0 (MIT OR Apache-2.0): sampler, built-in subtractive_synth and drum_synth, EQ, compressor, saturator, chorus, delay, reverb, maximizer
   Third-party material: the sample libraries above (VSCO 2 CE, Salamander), played as instruments; no loops, presets or existing compositions
+```
 
+```
 sandhya.wav  (Hindi-film-style ballad, E minor, 92 BPM)
   Made: 2026-10-16
   Composition and arrangement: Claude (Opus 5.5), via pieces/sandhya.mjs (original melody, harmony and rhythm)

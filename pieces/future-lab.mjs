@@ -5,6 +5,7 @@
 //   choir, braam, stabs), metallic percussion (raw and processed), synths, then a 16-bar groove that uses them together.
 
 import { Session, TPB, rng } from '../tools/lib/session.mjs';
+import { presets } from '../tools/lib/palette.mjs';
 import { barChords, voice, bassNote, human, melody, checkBars, drums } from '../tools/lib/music.mjs';
 
 const VLN = [
@@ -17,57 +18,23 @@ checkBars('violin', VLN); checkBars('brass', BRASS);
 
 export default function () {
   const s = new Session({ bpm: 110 });
-  const BAR = s.bar, S16 = TPB / 4, BEAT = 60000 / 110;
+  const BAR = s.bar, S16 = TPB / 4;
   const h = human(rng(2210));
-  const eq = (type, freq, gain = 0, q = 0.7) => ({ plugin: 'eq_1band', params: { type, freq, gain, q } });
-  const syn = params => ({ plugin: 'subtractive_synth', params });
-  const delay = (beats, feedback, mix) => ({ plugin: 'mod_delay', params: { time: Math.round(BEAT * beats), feedback, mix, lpf: 7000 } });
+  const P = presets(110);
 
   s.reverb('Hall', 'plate_reverb', { decay: 2.4, pre_delay: 20, damping: 9000, size: 70, low_cut: 250 });
   s.master('maximizer', { threshold: -3, ceiling: -1.5 });
 
-  // Electric violin: the Iowa solo violin through amp-like chains. Iowa is dry and mono: pan and send it.
-  const vn = { zones: 'violin_solo', sampler: { attack: 12, release: 220, velocity: 40, level: 4 }, sends: { Hall: -10 }, pan: 0.1 };
-  const evClean = s.instrument('EVClean', { ...vn, inserts: [eq(3, 180), delay(0.75, 25, 18)] });
-  const evDrive = s.instrument('EVDrive', { ...vn, volume: -4.5, inserts: [eq(3, 220), { plugin: 'saturator', params: { drive: 16, tone: 6500, mix: 75 } }, { plugin: 'chorus', params: { rate: 0.4, depth: 25, mix: 25 } }, delay(0.75, 30, 20)] });
-  const evOct = s.instrument('EVOctave', { ...vn, volume: -1, inserts: [eq(3, 120), { plugin: 'pitch_shifter', params: { semitones: -12, mix: 40 } }, { plugin: 'saturator', params: { drive: 10, tone: 5000, mix: 60 } }, delay(0.75, 25, 18)] });
-  const evPhase = s.instrument('EVPhaser', { ...vn, inserts: [eq(3, 220), { plugin: 'saturator', params: { drive: 8, tone: 8000, mix: 50 } }, { plugin: 'phaser', params: { rate: 0.35, depth: 80, stages: 3, feedback: 55, mix: 55 } }, delay(0.5, 35, 22)] });
-  const evSaw = s.instrument('EVSawLayer', { synth: syn({ osc1_wave: 0, osc2_wave: 0, osc2_detune: 7, osc_mix: 50, cutoff: 2400, resonance: 15, filter_env_amount: 20, filter_decay: 250, filter_sustain: 60, amp_attack: 15, amp_decay: 300, amp_sustain: 80, amp_release: 200, glide: 40, level: -16 }),
-    inserts: [eq(3, 250), { plugin: 'chorus', params: { rate: 0.5, depth: 40, mix: 40 } }], sends: { Hall: -12 }, volume: -4, pan: -0.15 });
-
-  // Brass by size. Iowa (solo, ff only, very different raw levels: RULES 4e) and VSCO sections.
-  const solo = (zones, volume, pan) => s.instrument(zones.replace(/_/g, ''), { zones, sampler: { attack: 20, release: 260, velocity: 30, level: 6 }, sends: { Hall: -9 }, volume, pan, maxShift: 7 });
-  const tpS = solo('trumpet_iowa', 1, 0.2), hnS = solo('horns_iowa', 2, -0.2), tbS = solo('trombone_iowa', 12, 0.15), tuS = solo('tuba_iowa', 4, -0.1);
-  const sect = (zones, volume, pan, extra = {}) => s.instrument(zones.replace(/_/g, '') + 'Sec', { zones, sampler: { attack: 15, release: 300, velocity: 45, level: 2 }, sends: { Hall: -7 }, volume, pan, maxShift: 7, ...extra });
-  const tp = sect('trumpet', -3, 0.25), hn = sect('horns', 3, -0.3), tb = sect('trombones', 12, 0.3, { sampler: { attack: 15, release: 300, velocity: 45, level: 6 } }), tu = sect('tuba', 12, 0);
-  const tpSt = sect('trumpet_stac', 0, 0.25, { oneShot: true }), hnSt = sect('horns_stac', 2, -0.3, { oneShot: true }), tbSt = sect('trombones_stac', 0, 0.3, { oneShot: true }), tuSt = sect('tuba_stac', 2, 0, { oneShot: true });
-  // Braam: low brass an octave down again, driven. The trailer horn.
-  const braam = s.instrument('Braam', { zones: 'trombones', sampler: { attack: 60, release: 900, velocity: 30, level: 4 }, sends: { Hall: -5 }, volume: 0, maxShift: 7,
-    inserts: [{ plugin: 'pitch_shifter', params: { semitones: -12, mix: 45 } }, { plugin: 'saturator', params: { drive: 12, tone: 4000, mix: 60 } }, eq(3, 35)] });
-
-  // Metallic percussion.
-  const pitched = (zones, volume, extra = {}, name = zones.replace(/_/g, '')) => s.instrument(name, { zones, oneShot: true, sampler: { attack: 0.5, release: 600, velocity: 50 }, sends: { Hall: -10 }, volume, ...extra });
-  const crot = pitched('crotales', 5, { pan: 0.3 }), vib = pitched('vibes_hard', 3, { pan: -0.2 }), gong = pitched('thai_gong', 0);
-  const vibBow = s.instrument('VibesBow', { zones: 'vibes_bow', sampler: { attack: 200, release: 1200, velocity: 30, level: 6 }, sends: { Hall: -6 }, volume: -3 });
-  const perc = s.instrument('Perc', { zones: 'perc', oneShot: true, sampler: { attack: 0.5, release: 500, velocity: 60 }, sends: { Hall: -12 }, volume: 4 });
-  const phil = s.instrument('PhilPerc', { zones: 'phil_perc', oneShot: true, sampler: { attack: 0.5, release: 600, velocity: 50 }, sends: { Hall: -10 }, volume: 8 });
-  const metalFX = pitched('crotales', 12, { inserts: [{ plugin: 'rectifier', params: { mode: 1, mix: 45 } }, { plugin: 'flanger', params: { rate: 0.15, depth: 80, feedback: 70, mix: 50 } }, delay(0.75, 45, 30)] }, 'MetalFX');
-  const gongDown = pitched('thai_gong', 5, { inserts: [{ plugin: 'pitch_shifter', params: { semitones: -12, mix: 100 } }, eq(3, 40)] }, 'GongDown');
-  const anvilDly = s.instrument('AnvilDelay', { zones: 'perc', oneShot: true, sampler: { attack: 0.5, release: 400, velocity: 60 }, sends: { Hall: -14 }, volume: 11, pan: -0.25, inserts: [eq(2, 2500, -3), delay(0.75, 40, 35)] });
-  const kit = s.instrument('Drums', { synth: { plugin: 'drum_synth', params: { level: -6, kick_decay: 520, kick_tune: -4, snare_snappy: 80, snare_decay: 220, hat_decay: 35, open_hat_decay: 260, cymbal_decay: 2000 } },
-    inserts: [{ plugin: 'compressor', params: { threshold: -16, ratio: 4, attack: 5, release: 100, makeup: 3 } }], sends: { Hall: -16 }, volume: 3 });
-
-  // Synths.
-  const pad = s.instrument('Pad', { synth: syn({ osc1_wave: 0, osc2_wave: 0, osc2_detune: 14, osc_mix: 50, cutoff: 1400, resonance: 10, filter_env_amount: 10, amp_attack: 700, amp_decay: 1000, amp_sustain: 85, amp_release: 1500, level: -12 }),
-    inserts: [{ plugin: 'chorus', params: { rate: 0.3, depth: 50, mix: 50 } }, eq(3, 180)], sends: { Hall: -6 }, volume: 11, pan: -0.15 });
-  const arp = s.instrument('Arp', { synth: syn({ osc1_wave: 1, osc2_wave: 0, osc2_detune: 6, osc_mix: 40, cutoff: 1900, resonance: 35, filter_env_amount: 40, filter_decay: 150, filter_sustain: 15, amp_attack: 1, amp_decay: 160, amp_sustain: 20, amp_release: 120, level: -12 }),
-    inserts: [delay(0.75, 35, 25), eq(3, 220)], sends: { Hall: -12 }, volume: 12, pan: 0.3 });
-  const bass = s.instrument('Bass', { synth: syn({ osc1_wave: 0, osc2_wave: 1, osc2_semitones: -12, osc_mix: 50, cutoff: 300, resonance: 30, filter_env_amount: 55, filter_decay: 120, filter_sustain: 10, amp_attack: 1, amp_decay: 180, amp_sustain: 40, amp_release: 60, level: -8 }),
-    inserts: [{ plugin: 'saturator', params: { drive: 5, mix: 45 } }, eq(3, 30)], volume: 12 });
-  const lead = s.instrument('SynthLead', { synth: syn({ osc1_wave: 0, osc2_wave: 1, osc2_detune: 8, osc_mix: 45, cutoff: 3000, resonance: 20, filter_env_amount: 25, filter_decay: 300, filter_sustain: 50, amp_attack: 5, amp_sustain: 80, amp_release: 200, glide: 90, level: -12 }),
-    inserts: [delay(0.75, 30, 20)], sends: { Hall: -10 }, volume: 12 });
-  const trem = s.instrument('TremPhaser', { zones: 'violins_trem', sampler: { attack: 80, release: 500, velocity: 40, level: 4 }, sends: { Hall: -8 }, volume: 0,
-    inserts: [{ plugin: 'phaser', params: { rate: 0.25, depth: 90, stages: 4, feedback: 60, mix: 60 } }, eq(3, 200)] });
+  const evClean = s.instrument('EVClean', P.evClean), evDrive = s.instrument('EVDrive', P.evDrive), evOct = s.instrument('EVOctave', P.evOctave);
+  const evPhase = s.instrument('EVPhaser', P.evPhaser), evSaw = s.instrument('EVSawLayer', P.evSaw);
+  const tpS = s.instrument('trumpetiowa', P.trumpetSolo), hnS = s.instrument('hornsiowa', P.hornSolo), tbS = s.instrument('tromboneiowa', P.tromboneSolo), tuS = s.instrument('tubaiowa', P.tubaSolo);
+  const tp = s.instrument('trumpetSec', P.trumpets), hn = s.instrument('hornsSec', P.horns), tb = s.instrument('trombonesSec', P.trombones), tu = s.instrument('tubaSec', P.tuba);
+  const tpSt = s.instrument('trumpetstacSec', P.trumpetsStac), hnSt = s.instrument('hornsstacSec', P.hornsStac), tbSt = s.instrument('trombonesstacSec', P.trombonesStac), tuSt = s.instrument('tubastacSec', P.tubaStac);
+  const braam = s.instrument('Braam', P.braam);
+  const crot = s.instrument('crotales', P.crotales), vib = s.instrument('vibeshard', P.vibes), gong = s.instrument('thaigong', P.thaiGong), vibBow = s.instrument('VibesBow', P.vibesBow);
+  const perc = s.instrument('Perc', P.perc), phil = s.instrument('PhilPerc', P.philPerc), metalFX = s.instrument('MetalFX', P.metalFX), gongDown = s.instrument('GongDown', P.gongDown);
+  const anvilDly = s.instrument('AnvilDelay', P.anvilDelay), kit = s.instrument('Drums', P.drums);
+  const pad = s.instrument('Pad', P.pad), arp = s.instrument('Arp', P.arp), bass = s.instrument('Bass', P.bass), lead = s.instrument('SynthLead', P.synthLead), trem = s.instrument('TremPhaser', P.tremPhaser);
 
   // Shared figures.
   const chordsOf = i => barChords(LOOP[i % 4])[0].ch;

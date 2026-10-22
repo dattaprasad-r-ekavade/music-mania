@@ -142,6 +142,17 @@ Listening test: `pieces/sample-tour.mjs` (every new zone on the same phrase, sam
 - **Click detector** fires on Iowa trombone and tuba ff: their waveform edges are steep (step equals the local RMS, no discontinuity in the files). Not a defect.
 - **Indian stand-ins:** soprano sax and oboe (shehnai, nadaswaram), plain flute (`flute_plain`, no vibrato; bansuri lines), mandolin and mandolin tremolo (Carnatic mandolin, santoor-like tremolo), Chinese hand cymbals on `phil_perc` key 60 (manjira), surdo (dhol-like low end), Thai gong, bowed vibraphone (glassy drone pad).
 
+## 4f. Western / futuristic palette (Future Lab, 2026-10-22)
+
+`pieces/future-lab.mjs` plays every preset alone, then a 16-bar groove; the presets live in `tools/lib/palette.mjs` (`presets(bpm)`). **Owner verdict: keep them all, all good to use.**
+
+- **Electric violin** = Iowa `violin_solo` through inserts: clean (delay), drive (saturator 16 dB, tone 6.5 kHz, chorus, dotted-8th delay), octave (pitch shifter -12 at 40 % before the saturator), phaser; `evSaw` doubles a line with a detuned saw. The saturator adds about 4 dB: drive sits at volume -4.5.
+- **Brass by size:** Iowa solos and VSCO sections, braam (trombones with a -12 pitch-shift layer and saturator, plus tuba D2 and gong), staccato stabs on all four sections. VSCO `trombones` stay quiet (-22 dB alone at sampler level 6, volume +12); VSCO `tuba` sustains run out under 2-bar holds: use `tuba_iowa` for the braam.
+- **Metal:** crotales (84-108), vibes, bowed vibes, Thai gong (60-72), `perc` (anvil 63, triangle 61, cowbell 56, cymbals 51/53, gong 52), `phil_perc` (agogo, bell tree, chimes, tam-tam, clash), processed crotales (rectifier + flanger + delay), gong an octave down, anvil with delay.
+- **Levels alone** (section RMS dBFS): violin chains -14…-18, brass -12…-22, metal -12…-24, synths -18…-21, drum_synth hats -32 (thin, centroid 16 kHz; use them under other parts). Groove -13.0.
+- **VSCO glock is about 25 dB quieter** than the other mallets at the same settings: dropped from the palette.
+- Click detector fires on the VSCO staccato brass (bar 60) as well as Iowa trombone/tuba; not heard as clicks yet.
+
 ## 5. Mix rules (measured targets)
 
 These are the numbers we mix toward. If a stem check fails, fix levels in the generator and re-render.

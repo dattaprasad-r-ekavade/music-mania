@@ -21,6 +21,7 @@ Repo: https://github.com/dattaprasad-r-ekavade/music-mania
 | `tools/similarity.py`, `tools/notes.mjs` | Copying guard: a piece's lines against reference MIDI (interval + rhythm runs, shared 6-note patterns) |
 | `tools/critique.mjs`, `tools/lib/theory.mjs` | Melody critique against measured targets (docs/theory-western.md) |
 | `tools/lib/raga.mjs` | Raga, taal and ornament data and checks (docs/theory-indian.md) |
+| `tools/lib/palette.mjs` | Western / futuristic instrument presets from Future Lab: electric violin chains, brass by size, braam, metallic percussion, synths |
 | `tools/visualize.py` | PNGs the agent can look at: `mix` (spectrogram, loudness, bands per section, width), `stems`, `roll` (piano roll, register clashes with the lead), `compare`; `render.mjs --png` writes them to work/ |
 | `tools/embed.py` | CLAP / MERT audio embeddings: similarity of a render to references, CLAP text-prompt descriptors |
 | `docs/research-roadmap.md` | Research to build on: focus/productivity music, sfizz/DawDreamer/Pedalboard/Surge XT, convolution IRs, more sample libraries, suggested order |
@@ -91,6 +92,7 @@ A piece that returns `ref: 'refs/<name>.profile.json'` from its generator gets a
 | `city-lights` | 3:26, 86 BPM, D♭ | Neo-soul / lo-fi: swung drum machine, saturated piano comping, synth bass, harmon-muted trumpet, pizzicato break. −15.0 LUFS. Awaiting review |
 | `sandhya` | 3:57, 92 BPM, E minor | Hindi-film-style ballad written from the reference profiles (Tum Hi Ho, Kesariya, Channa Mereya): bansuri-style flute lead, tenor sax interlude, Dan Tranh as santoor, dholak on the VCSL hand kit over a 3-3-2 kick, staged strings by fader automation. −12.2 LUFS. Copying guard clean. Awaiting review |
 | `neon-bhairav` | 3:24, 100 BPM, raga Bhairav on C | Cyberpunk fusion: rolling synth bass, delayed arp, gliding synth lead doubled by oboe-shehnai, four-on-the-floor plus tabla-style hand drums. −11.4 LUFS. Awaiting review |
+| `future-lab` | 4:50, 110 BPM, D minor | Sound palette, not a release: electric violin chains, brass from trumpet to tuba, braam, metallic percussion, synths, then a 16-bar groove. Owner: keep all presets |
 
 ## Singing: what we measured (2026-10-16)
 

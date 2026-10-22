@@ -153,6 +153,17 @@ Listening test: `pieces/sample-tour.mjs` (every new zone on the same phrase, sam
 - **VSCO glock is about 25 dB quieter** than the other mallets at the same settings: dropped from the palette.
 - Click detector fires on the VSCO staccato brass (bar 60) as well as Iowa trombone/tuba; not heard as clicks yet.
 
+## 4g. Dune references and Deep Desert (2026-10-22)
+
+**References** (`refs/dune-*.profile.json`; audio in R2 only): Paul's Dream, Ripples in the Sand, Beginnings Are Such Delicate Times. Beat trackers read the drum pulse: 123 / 108 BPM, felt tempo about 62. Harmony is a drone: one chord for 4+ bars (i-i-i-i x34 in Paul's Dream), moving to bII (Ripples: I-I-bII-bII) or bVII. Tonics D, D, A. Lines: 2-3 notes per bar in the voice, 21-28 % on the beat, leaps 36-54 %. Mix: 63 Hz +7..+10 dB re 1 kHz, 4 kHz -4..-11, crest 14-24 dB, sections span about 20 dB (-33..-9 LUFS in Paul's Dream).
+
+**Deep Desert** (`pieces/deep-desert.mjs`) took its brief from those numbers. What the mix needed:
+- **The limiter flattened the first draft** (every section -11 dB): the sustained bed (pad, sub, heartbeat) must carry the arc. Per-section volume automation on those groups gave -23 (Intro) to -11 (Climax).
+- **Clicks:** a cello ostinato with 16ths 1.6x long overlapped repeats of the same note (132 clicks; notes now 0.95x); war-horn notes past the 2.4-4 s Iowa cello samples clicked at the sample end (113; hits now 2.2 beats, holds re-strike each bar). The pitch shifter clicks on a note at tick 0.
+- **Bowed vibes at the preset level** made bars 1-2 as loud as the climax: -11 dB in a quiet intro.
+- **Tone vs Paul's Dream:** master low shelf +3 at 80 Hz, -3 at 500 Hz (voice-synth formants), +5 at 2.5 kHz, +3 shelf at 3 kHz, LPF 10 kHz. Final bands within 3.5 dB of the reference from 63 Hz to 4 kHz. Width stays 6 dB narrower: the mono sub dominates; a second pad panned opposite gained under 1 dB.
+- **Aesthetics** (Audiobox): CE 6.3 / PQ 7.2, Rise highest (CE 7.0), Climax lowest (5.6). The scorer marks distorted, sub-heavy sections down (cf. Golden Hour 7.6): check against the owner's ear before chasing it.
+
 ## 5. Mix rules (measured targets)
 
 These are the numbers we mix toward. If a stem check fails, fix levels in the generator and re-render.

@@ -109,4 +109,16 @@ sandhya.wav  (Hindi-film-style ballad, E minor, 92 BPM)
   Human input: brief ("use references to learn, then build") by the owner; no human melodic contribution yet
   Tools: SoundCraft 0.7.0: sampler, subtractive_synth, drum_synth, EQ, compressor, saturator, plate reverb, maximizer
   Third-party material: the sample libraries above (Salamander, VSCO 2 CE, VCSL), played as instruments
+
+```
+deep-desert.wav  (desert cue in the sound world of the Dune scores, D Phrygian dominant, 62 BPM)
+  Made: 2026-10-22
+  Composition and arrangement: Claude (Opus 5.5), via pieces/deep-desert.mjs (original melody, harmony and rhythm)
+  Brief: owner's idea (a tune for Dune); style statistics and mix profile from three Hans Zimmer Dune tracks via
+    tools/analyze.py (drone on one chord leaning on bII, off-beat melody, heavy sub, wide dynamic arc); no melody,
+    harmony or audio taken from them. tools/similarity.py against their transcriptions: no line comes close.
+  Human input: the idea and brief by the owner
+  Tools: SoundCraft 0.7.0: sampler, subtractive_synth, drum_synth, EQ, compressor, saturator, pitch shifter, phaser, flanger, rectifier, delay, plate reverb, maximizer
+  Third-party material: the sample libraries above (Iowa MIS, Philharmonia, VSCO 2 CE), played as instruments
+```
 ```

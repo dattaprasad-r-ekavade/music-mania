@@ -61,5 +61,32 @@ export function presets(bpm, hall = 'Hall') {
       inserts: [delay(0.75, 30, 20)], sends: send(-10), volume: 12 },
     tremPhaser: { zones: 'violins_trem', sampler: { attack: 80, release: 500, velocity: 40, level: 4 }, sends: send(-8), volume: 0,
       inserts: [{ plugin: 'phaser', params: { rate: 0.25, depth: 90, stages: 4, feedback: 60, mix: 60 } }, eq(3, 200)] },
+
+    // Desert / Dune-style sounds (pieces/dune-lab.mjs).
+    // Electric cello: Iowa solo cello (36-81), an octave-down layer and drive. warHorn: same, slower and darker (Tibetan horn).
+    eCello: { zones: 'cello_solo', sampler: { attack: 40, release: 400, velocity: 35, level: 6 }, sends: send(-8), volume: -5, pan: -0.05,
+      inserts: [eq(3, 45), { plugin: 'pitch_shifter', params: { semitones: -12, mix: 30 } }, { plugin: 'saturator', params: { drive: 14, tone: 4000, mix: 65 } }, eq(0, 2500, -3, 1), delay(1, 20, 15)] },
+    warHorn: { zones: 'cello_solo', sampler: { attack: 180, release: 900, velocity: 25, level: 6 }, sends: send(-5), volume: -5,
+      inserts: [{ plugin: 'pitch_shifter', params: { semitones: -12, mix: 55 } }, { plugin: 'saturator', params: { drive: 24, tone: 2200, mix: 85 } }, eq(4, 3000), eq(3, 35)] },
+    // Duduk stand-ins: Iowa reeds last 1.5-2.5 s, so pair one with `dudukGlide` (same notes, overlapping) to hold and slide.
+    dudukClar: { zones: 'clarinet_iowa', sampler: { attack: 60, release: 500, velocity: 30, level: 6 }, sends: send(-6), volume: -5, pan: 0.05,
+      inserts: [eq(4, 3200), eq(0, 400, 3, 1), { plugin: 'saturator', params: { drive: 4, mix: 30 } }] },
+    dudukCA: { zones: 'cor_anglais', sampler: { attack: 50, release: 500, velocity: 30, level: 6 }, sends: send(-6), volume: -5, pan: 0.05, inserts: [eq(4, 3500), eq(0, 450, 2, 1)] },
+    dudukOboe: { zones: 'oboe_iowa', sampler: { attack: 60, release: 500, velocity: 30, level: 6 }, sends: send(-6), volume: -5, pan: 0.05, inserts: [eq(4, 2600), eq(0, 500, 3, 1)] },
+    dudukLoop: { zones: 'clarinet_iowa', sampler: { attack: 60, release: 500, velocity: 30, level: 6, loop_mode: 1, loop_start: 40, loop_end: 70 }, sends: send(-6), volume: -5, pan: 0.05,
+      inserts: [eq(4, 3200), eq(0, 400, 3, 1)] },
+    dudukGlide: { synth: syn({ osc1_wave: 3, osc2_wave: 0, osc2_detune: 4, osc_mix: 25, cutoff: 1300, resonance: 10, filter_env_amount: 10, filter_decay: 400, filter_sustain: 70, amp_attack: 120, amp_decay: 500, amp_sustain: 90, amp_release: 600, glide: 220, level: -14 }),
+      inserts: [eq(4, 2500), { plugin: 'chorus', params: { rate: 0.3, depth: 20, mix: 25 } }], sends: send(-6), volume: 12, pan: 0.05 },
+    // Voice stand-ins: detuned saws through "ah" formant peaks (700 / 1150 / 2600 Hz).
+    voxPad: { synth: syn({ osc1_wave: 0, osc2_wave: 0, osc2_detune: 10, osc_mix: 50, cutoff: 3500, resonance: 5, amp_attack: 1500, amp_decay: 1000, amp_sustain: 90, amp_release: 3000, level: -10 }),
+      inserts: [eq(0, 700, 9, 3), eq(0, 1150, 7, 4), eq(0, 2600, 5, 5), eq(4, 4500), { plugin: 'chorus', params: { rate: 0.2, depth: 60, mix: 50 } }], sends: send(-4), volume: 11 },
+    voxWail: { synth: syn({ osc1_wave: 3, osc2_wave: 0, osc2_detune: 5, osc_mix: 30, cutoff: 3000, resonance: 5, amp_attack: 300, amp_decay: 800, amp_sustain: 85, amp_release: 1500, glide: 300, level: -10 }),
+      inserts: [eq(0, 700, 8, 3), eq(0, 1150, 6, 4), eq(0, 2600, 5, 5), eq(4, 5000), delay(1, 30, 20)], sends: send(-4), volume: 8, pan: 0.1 },
+    // Sine sub drone (play D1/D2): the 30-80 Hz weight the Dune references have (63 Hz +7..+10 dB re 1 kHz).
+    subDrone: { synth: syn({ osc1_wave: 2, osc2_wave: 3, osc_mix: 20, cutoff: 180, resonance: 0, amp_attack: 1200, amp_decay: 1000, amp_sustain: 95, amp_release: 2500, level: -6 }),
+      inserts: [eq(4, 160)], volume: 4 },
+    // Sub heartbeat (kick key 36) and big low toms (key 45).
+    subPulse: { synth: { plugin: 'drum_synth', params: { level: 0, kick_tune: -10, kick_decay: 1400, tom_tune: -10, tom_decay: 1500 } },
+      inserts: [eq(4, 220), { plugin: 'compressor', params: { threshold: -14, ratio: 3, attack: 10, release: 200, makeup: 2 } }], sends: send(-18), volume: 6 },
   };
 }

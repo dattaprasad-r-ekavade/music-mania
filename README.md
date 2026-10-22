@@ -93,7 +93,7 @@ A piece that returns `ref: 'refs/<name>.profile.json'` from its generator gets a
 | `sandhya` | 3:57, 92 BPM, E minor | Hindi-film-style ballad written from the reference profiles (Tum Hi Ho, Kesariya, Channa Mereya): bansuri-style flute lead, tenor sax interlude, Dan Tranh as santoor, dholak on the VCSL hand kit over a 3-3-2 kick, staged strings by fader automation. −12.2 LUFS. Copying guard clean. Awaiting review |
 | `neon-bhairav` | 3:24, 100 BPM, raga Bhairav on C | Cyberpunk fusion: rolling synth bass, delayed arp, gliding synth lead doubled by oboe-shehnai, four-on-the-floor plus tabla-style hand drums. −11.4 LUFS. Awaiting review |
 | `future-lab` | 4:50, 110 BPM, D minor | Sound palette, not a release: electric violin chains, brass from trumpet to tuba, braam, metallic percussion, synths, then a 16-bar groove. Owner: keep all presets |
-| `deep-desert` | 3:29, 62 BPM, D Phrygian dominant | Desert cue in the sound world of the Dune scores (original theme): duduk stand-in (Iowa clarinet + gliding synth), electric cello, war horn, voice synths, metal, war drums over a sub drone; builds from -23 to -11 dB. −11.2 LUFS. Awaiting review |
+| `deep-desert` | 3:14, 62 BPM, D Phrygian dominant | Desert cue in the sound world of the Dune scores (original): duduk stand-in with microtonal bends, electric cello, war horn, throat-singing and voice synths, metal, drums in 7 against a cello in 5; cold open, void, fragments, cut, a climax that lifts a semitone, collapse, unresolved ending. −11.7 LUFS. Review 1: 6/10 (predictable framing); version B awaiting A/B |
 
 ## Singing: what we measured (2026-10-16)
 

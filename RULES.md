@@ -164,6 +164,12 @@ Listening test: `pieces/sample-tour.mjs` (every new zone on the same phrase, sam
 - **Tone vs Paul's Dream:** master low shelf +3 at 80 Hz, -3 at 500 Hz (voice-synth formants), +5 at 2.5 kHz, +3 shelf at 3 kHz, LPF 10 kHz. Final bands within 3.5 dB of the reference from 63 Hz to 4 kHz. Width stays 6 dB narrower: the mono sub dominates; a second pad panned opposite gained under 1 dB.
 - **Aesthetics** (Audiobox): CE 6.3 / PQ 7.2, Rise highest (CE 7.0), Climax lowest (5.6). The scorer marks distorted, sub-heavy sections down (cf. Golden Hour 7.6): check against the owner's ear before chasing it.
 
+**Deep Desert review 1 (owner, 2026-10-22): 6/10.** "The tone felt a bit generic; the instruments were in the right spot but the framing was typical and predictable. Dune music is not guessable." Version A was a steady build (Intro, Theme, Rise, Cello, Climax, Outro) with a square 8-bar theme. Version B (A/B pair in `work/ab/`, in R2):
+- **Form against expectation:** a loud cold open cut to near silence; a void with metal at seeded irregular times (1.75-4.25 beats apart); the theme only in fragments; drums cycling in 7 and a cello ostinato in 5 against the 16-step bar; a hard cut and a climax entering off the beat; a lift of a semitone halfway; a collapse; an ending held on bII.
+- **Pitch bends work:** a `pitch_shifter` in insert slot a, `automate('plugin:a:cents', ...)` (`plugin:a:` = slot 0, `plugin:b:` = slot 1; tested: 0 to +98 cents ramps smoothly, `semitones` too). Duduk and voice scoop into notes, hold "neutral" thirds (+30..+40 cents), fall at phrase ends; horn, cello and voice bend down 3 semitones in the collapse.
+- **New colours:** throat-singing stand-in (a buzzy D2 drone with a +16 dB, Q 9 peak stepped through harmonics 8-13 by automating `plugin:a:freq`), bowed vibes doubled 22 cents sharp (beating), crotales two octaves down, anvil an octave down.
+- **The aesthetics scorer and density:** a pitch shifter on every group plus driven horn blasts every 1.5 beats scored Climax CE 3.1 / PQ 5.0. Muting one group at a time over the climax (`soundcraft-cli run --cmd mix.mute=... --start --end --bounce`, then `aesthetics.score`) found the horn (+2.0 CE) and the surdo (+0.8 PQ): horn now on 2 of 6 accent groups with drive 14, surdo out. B: CE 5.1 / PQ 6.9 whole (A 6.3 / 7.2); the sparse sections score low on CE by design. Owner's ear decides.
+
 ## 5. Mix rules (measured targets)
 
 These are the numbers we mix toward. If a stem check fails, fix levels in the generator and re-render.
